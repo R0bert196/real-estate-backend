@@ -4,10 +4,7 @@ package com.cleancode.real_estate_backend.entities;
 
 import com.cleancode.real_estate_backend.enums.Role;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,10 +13,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
-@Data
 @Entity
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -42,10 +41,10 @@ public class AppUser implements UserDetails {
     @Column
     private Boolean enabled = false;
 
-    @Column(length = 64)
+    @Column(length = 6)
     private String verificationCode;
 
-    @Column(length = 64)
+    @Column(length = 6)
     private String resetPasswordCode;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -102,4 +101,16 @@ public class AppUser implements UserDetails {
     }
 
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AppUser appUser = (AppUser) o;
+        return Objects.equals(id, appUser.id) && Objects.equals(name, appUser.name) && Objects.equals(email, appUser.email) && Objects.equals(password, appUser.password) && Objects.equals(enabled, appUser.enabled) && Objects.equals(verificationCode, appUser.verificationCode) && Objects.equals(resetPasswordCode, appUser.resetPasswordCode) && Objects.equals(createTs, appUser.createTs) && Objects.equals(role, appUser.role);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, email, password, enabled, verificationCode, resetPasswordCode, createTs, role);
+    }
 }
