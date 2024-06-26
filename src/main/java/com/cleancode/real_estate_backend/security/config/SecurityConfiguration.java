@@ -4,6 +4,7 @@ import com.cleancode.real_estate_backend.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,7 +18,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -25,9 +25,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfiguration {
 
-    private final JwtAuthenticationFilter jwtAuthFiler;
-    private final AuthenticationProvider authenticationProvider;
-    private final LogoutHandler logoutHandler;
+//    private final JwtAuthenticationFilter jwtAuthFiler;
+//    private final AuthenticationProvider authenticationProvider;
+//    private final LogoutHandler logoutHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -36,20 +36,21 @@ public class SecurityConfiguration {
             .cors(httpSecurityCorsConfigurer -> corsConfigurationSource())
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/api/auth/**").permitAll()
-                    .requestMatchers("/api/user/**").hasRole("USER")
-                    .anyRequest().authenticated()
+                  .requestMatchers("/**").permitAll()
+//                    .requestMatchers("/api/auth/**").permitAll()
+//                    .requestMatchers("/api/user/**").hasRole("USER")
+//                    .anyRequest().authenticated()
             )
-            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider)
-                .addFilterAfter(jwtAuthFiler, UsernamePasswordAuthenticationFilter.class)
-                .logout(logout -> logout
-                        .addLogoutHandler(logoutHandler)
-                        .logoutUrl("/api/auth/logout")
-                        .logoutSuccessHandler((request, response, authentication) -> {
-                            SecurityContextHolder.clearContext();
-                        })
-                );
+            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+//                .authenticationProvider(authenticationProvider)
+//                .addFilterAfter(jwtAuthFiler, UsernamePasswordAuthenticationFilter.class)
+//                .logout(logout -> logout
+//                        .addLogoutHandler(logoutHandler)
+//                        .logoutUrl("/api/auth/logout")
+//                        .logoutSuccessHandler((request, response, authentication) -> {
+//                            SecurityContextHolder.clearContext();
+//                        })
+//                );
         return http.build();
     }
 
