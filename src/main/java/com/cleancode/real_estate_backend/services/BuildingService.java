@@ -6,8 +6,6 @@ import com.cleancode.real_estate_backend.dtos.administrator.building.FloorReques
 import com.cleancode.real_estate_backend.entities.Building;
 import com.cleancode.real_estate_backend.entities.Floor;
 import com.cleancode.real_estate_backend.repositories.BuildingRepository;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,12 +22,20 @@ public class BuildingService {
 
     public BuildingResponseDTO addBuilding(BuildingRequestDTO buildingRequestDTO) {
 
-        Building building = convertToEntity(buildingRequestDTO);
+        try {
 
-        Building savedBuilding = buildingRepository.save(building);
-        Set<Floor> savedFloors = savedBuilding.getFloors();
+            Building building = convertToEntity(buildingRequestDTO);
 
-        return new BuildingResponseDTO(building.getName(), savedFloors.size(), savedFloors.stream().mapToDouble(Floor::getSquareMeter).sum());
+            Building savedBuilding = buildingRepository.save(building);
+            Set<Floor> savedFloors = savedBuilding.getFloors();
+
+            return new BuildingResponseDTO(building.getName(), savedFloors.size(), savedFloors.stream().mapToDouble(Floor::getSquareMeter).sum());
+        } catch (IllegalArgumentException e) {
+
+            log.error("Error while adding building: {}", e.getMessage());
+
+            throw new IllegalArgumentException("Error while adding building", e);
+        }
     }
 
     private Building convertToEntity(BuildingRequestDTO dto) {
