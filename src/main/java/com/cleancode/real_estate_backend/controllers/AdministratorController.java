@@ -1,8 +1,12 @@
 package com.cleancode.real_estate_backend.controllers;
 
 import com.cleancode.real_estate_backend.dtos.administrator.building.BuildingRequestDTO;
+import com.cleancode.real_estate_backend.dtos.administrator.building.BuildingResponseDTO;
+import com.cleancode.real_estate_backend.services.BuildingService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -11,10 +15,17 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AdministratorController {
 
-    @PostMapping("/building")
-    public void addBuilding(@RequestBody BuildingRequestDTO buildingRequestDTO) {
+    private final BuildingService buildingService;
 
-        System.out.println(buildingRequestDTO);
+    @PostMapping("/building")
+    public ResponseEntity<?> addBuilding(@RequestBody BuildingRequestDTO buildingRequestDTO) {
+
+        try {
+            return ResponseEntity.ok(buildingService.addBuilding(buildingRequestDTO));
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return ResponseEntity.badRequest().body(null);
+        }
 
     }
 }

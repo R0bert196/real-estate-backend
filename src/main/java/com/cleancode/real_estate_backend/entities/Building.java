@@ -33,16 +33,4 @@ public class Building {
     private Set<Tenant> tenants = new LinkedHashSet<>();
 
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Building building = (Building) o;
-        return Objects.equals(id, building.id) && Objects.equals(name, building.name) && Objects.equals(address, building.address) && Objects.equals(floors, building.floors) && Objects.equals(tenants, building.tenants);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, address, floors, tenants);
-    }
 }

@@ -20,21 +20,9 @@ public class Floor {
     private Double squareMeter;
     private Integer orderNumber;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "building_id", nullable = false)
     private Building building;
 
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Floor floor = (Floor) o;
-        return Objects.equals(id, floor.id) && Objects.equals(squareMeter, floor.squareMeter) && Objects.equals(orderNumber, floor.orderNumber) && Objects.equals(building, floor.building);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, squareMeter, orderNumber, building);
-    }
 }
