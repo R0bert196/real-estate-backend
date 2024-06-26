@@ -24,6 +24,7 @@ public class Tenant {
 //    private Double rentedSquareMeterS;
     private Double squareMeterPrice;
     private Double maintenanceSquareMeterPrice;
+    private String name;
 
     @ManyToMany(mappedBy = "tenants")
     private Set<Building> buildings = new LinkedHashSet<>();
