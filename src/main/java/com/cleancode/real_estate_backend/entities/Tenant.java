@@ -26,7 +26,7 @@ public class Tenant {
     private Double maintenanceSquareMeterPrice;
     private String name;
 
-    @ManyToMany(mappedBy = "tenants")
+    @ManyToMany(mappedBy = "tenants", fetch = FetchType.LAZY)
     private Set<Building> buildings = new LinkedHashSet<>();
 
 

@@ -55,6 +55,14 @@ public class BuildingService {
         return building;
     }
 
+    public BuildingResponseDTO convertToDTO(Building entity) {
+
+        return new BuildingResponseDTO(
+                entity.getName(),
+                entity.getFloors().size(),
+                entity.getFloors().stream().mapToDouble(Floor::getSquareMeter).sum());
+    }
+
     private Floor convertToEntity(FloorRequestDTO dto) {
 
         return Floor.builder()

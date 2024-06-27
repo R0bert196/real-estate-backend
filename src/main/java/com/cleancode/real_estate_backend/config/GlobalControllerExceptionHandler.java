@@ -27,7 +27,7 @@ public class GlobalControllerExceptionHandler extends ResponseEntityExceptionHan
     @ExceptionHandler(value={IllegalArgumentException.class})
     public ResponseEntity<Object> handleIllegalArgumentException(Exception e, WebRequest request) {
         log.error(" IllegalArgumentException occurred: {}", e.getMessage(), e);
-        return new ResponseEntity<>(buildResponse(e, HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(buildResponse(e, HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     }
 
 
