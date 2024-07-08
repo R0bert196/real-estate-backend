@@ -1,6 +1,9 @@
 package com.cleancode.real_estate_backend.controllers;
 
 import com.cleancode.real_estate_backend.dtos.administrator.building.BuildingRequestDTO;
+import com.cleancode.real_estate_backend.dtos.administrator.building.BuildingResponseDTO;
+import com.cleancode.real_estate_backend.dtos.administrator.building.BuildingResponseDTOLite;
+import com.cleancode.real_estate_backend.dtos.administrator.tenants.TenantRequestDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.TenantResponseDTO;
 import com.cleancode.real_estate_backend.services.BuildingService;
 import com.cleancode.real_estate_backend.services.TenantService;
@@ -26,10 +29,24 @@ public class AdministratorController {
         return ResponseEntity.ok(buildingService.addBuilding(buildingRequestDTO));
     }
 
-    @GetMapping("/tenants")
+    @GetMapping("/building")
+    public ResponseEntity<?> getBuildings() {
+
+        List<BuildingResponseDTO> buildings = buildingService.getBuildings();
+
+        return ResponseEntity.ok(buildings);
+    }
+
+    @GetMapping("/tenant")
     public ResponseEntity<?> getTenants() {
 
         List<TenantResponseDTO> tenants = tenantService.getTenants();
         return ResponseEntity.ok(tenants);
+    }
+
+    @PostMapping("/tenant")
+    public ResponseEntity<?> addTenant(@RequestBody TenantRequestDTO tenantRequestDTO) {
+
+        return null;
     }
 }

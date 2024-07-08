@@ -1,6 +1,7 @@
 package com.cleancode.real_estate_backend.services;
 
 import com.cleancode.real_estate_backend.dtos.administrator.building.BuildingRequestDTO;
+import com.cleancode.real_estate_backend.dtos.administrator.building.BuildingResponseDTOLite;
 import com.cleancode.real_estate_backend.dtos.administrator.building.BuildingResponseDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.building.FloorRequestDTO;
 import com.cleancode.real_estate_backend.entities.Building;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -19,8 +21,9 @@ import java.util.stream.Collectors;
 public class BuildingService {
 
     private final BuildingRepository buildingRepository;
+    private final FloorService floorService;
 
-    public BuildingResponseDTO addBuilding(BuildingRequestDTO buildingRequestDTO) {
+    public BuildingResponseDTOLite addBuilding(BuildingRequestDTO buildingRequestDTO) {
 
         try {
 
@@ -29,7 +32,7 @@ public class BuildingService {
             Building savedBuilding = buildingRepository.save(building);
             Set<Floor> savedFloors = savedBuilding.getFloors();
 
-            return new BuildingResponseDTO(building.getName(), savedFloors.size(), savedFloors.stream().mapToDouble(Floor::getSquareMeter).sum());
+            return new BuildingResponseDTOLite(building.getName(), savedFloors.size(), savedFloors.stream().mapToDouble(Floor::getSize).sum(), building.getId());
         } catch (IllegalArgumentException e) {
 
             log.error("Error while adding building: {}", e.getMessage());
@@ -55,19 +58,34 @@ public class BuildingService {
         return building;
     }
 
+    public BuildingResponseDTOLite convertToDTOLite(Building entity) {
+
+        return new BuildingResponseDTOLite(
+                entity.getName(),
+                entity.getFloors().size(),
+                entity.getFloors().stream().mapToDouble(Floor::getSize).sum(),
+                entity.getId());
+    }
+
     public BuildingResponseDTO convertToDTO(Building entity) {
 
         return new BuildingResponseDTO(
                 entity.getName(),
-                entity.getFloors().size(),
-                entity.getFloors().stream().mapToDouble(Floor::getSquareMeter).sum());
+                entity.getFloors().stream().map(floorService::convertToDTO).toList(),
+                entity.getFloors().stream().mapToDouble(Floor::getSize).sum(),
+                entity.getId());
     }
 
     private Floor convertToEntity(FloorRequestDTO dto) {
 
         return Floor.builder()
-                .orderNumber(Integer.valueOf(dto.floorNumber()))
-                .squareMeter(Double.valueOf(dto.floorSize()))
+                .floorNumber(Integer.valueOf(dto.floorNumber()))
+                .size(Double.valueOf(dto.floorSize()))
                 .build();
+    }
+
+    public List<BuildingResponseDTO> getBuildings() {
+
+        return buildingRepository.findAll().stream().map(this::convertToDTO).toList();
     }
 }

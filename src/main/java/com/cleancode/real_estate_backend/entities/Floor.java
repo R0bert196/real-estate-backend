@@ -3,8 +3,6 @@ package com.cleancode.real_estate_backend.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Objects;
-
 @Entity
 @Getter
 @Setter
@@ -17,8 +15,8 @@ public class Floor {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    private Double squareMeter;
-    private Integer orderNumber;
+    private Double size;
+    private Integer floorNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "building_id", nullable = false)
