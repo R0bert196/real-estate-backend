@@ -1,9 +1,9 @@
 package com.cleancode.real_estate_backend.services;
 
-import com.cleancode.real_estate_backend.dtos.administrator.building.BuildingRequestDTO;
-import com.cleancode.real_estate_backend.dtos.administrator.building.BuildingResponseDTOLite;
-import com.cleancode.real_estate_backend.dtos.administrator.building.BuildingResponseDTO;
-import com.cleancode.real_estate_backend.dtos.administrator.building.FloorRequestDTO;
+import com.cleancode.real_estate_backend.dtos.administrator.building.request.BuildingRequestDTO;
+import com.cleancode.real_estate_backend.dtos.administrator.building.response.BuildingResponseDTOLite;
+import com.cleancode.real_estate_backend.dtos.administrator.building.response.BuildingResponseDTO;
+import com.cleancode.real_estate_backend.dtos.administrator.building.request.FloorRequestDTO;
 import com.cleancode.real_estate_backend.entities.Building;
 import com.cleancode.real_estate_backend.entities.Floor;
 import com.cleancode.real_estate_backend.repositories.BuildingRepository;

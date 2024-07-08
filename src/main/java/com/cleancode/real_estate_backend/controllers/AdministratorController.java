@@ -1,10 +1,9 @@
 package com.cleancode.real_estate_backend.controllers;
 
-import com.cleancode.real_estate_backend.dtos.administrator.building.BuildingRequestDTO;
-import com.cleancode.real_estate_backend.dtos.administrator.building.BuildingResponseDTO;
-import com.cleancode.real_estate_backend.dtos.administrator.building.BuildingResponseDTOLite;
-import com.cleancode.real_estate_backend.dtos.administrator.tenants.TenantRequestDTO;
-import com.cleancode.real_estate_backend.dtos.administrator.tenants.TenantResponseDTO;
+import com.cleancode.real_estate_backend.dtos.administrator.building.request.BuildingRequestDTO;
+import com.cleancode.real_estate_backend.dtos.administrator.building.response.BuildingResponseDTO;
+import com.cleancode.real_estate_backend.dtos.administrator.tenants.request.TenantRequestDTO;
+import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTO;
 import com.cleancode.real_estate_backend.services.BuildingService;
 import com.cleancode.real_estate_backend.services.TenantService;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +46,8 @@ public class AdministratorController {
     @PostMapping("/tenant")
     public ResponseEntity<?> addTenant(@RequestBody TenantRequestDTO tenantRequestDTO) {
 
-        return null;
+        TenantResponseDTO tenant = tenantService.addTenant(tenantRequestDTO);
+        return ResponseEntity.ok(tenant);
+
     }
 }

@@ -1,4 +1,4 @@
-package com.cleancode.real_estate_backend.dtos.administrator.building;
+package com.cleancode.real_estate_backend.dtos.administrator.building.response;
 
 import java.util.List;
 

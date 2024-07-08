@@ -1,6 +1,6 @@
 package com.cleancode.real_estate_backend.services;
 
-import com.cleancode.real_estate_backend.dtos.administrator.building.FloorResponseDTO;
+import com.cleancode.real_estate_backend.dtos.administrator.building.response.FloorResponseDTO;
 import com.cleancode.real_estate_backend.entities.Floor;
 import com.cleancode.real_estate_backend.repositories.FloorRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +16,6 @@ public class FloorService {
 
 
     public FloorResponseDTO convertToDTO(Floor entity) {
-        return new FloorResponseDTO(entity.getSize(), entity.getFloorNumber());
+        return new FloorResponseDTO(entity.getSize(), entity.getFloorNumber(), entity.getId());
     }
 }
