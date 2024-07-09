@@ -19,7 +19,7 @@ public class FloorService {
 
 
     public FloorResponseDTOLite convertToDTOLite(Floor entity) {
-        return new FloorResponseDTOLite(entity.getSize(), entity.getFloorNumber(), entity.getId());
+        return new FloorResponseDTOLite(entity.getSize(), entity.getAvailableSize(), entity.getFloorNumber(), entity.getId());
     }
 
     public FloorResponseDTO convertToDTO(Floor entity) {
