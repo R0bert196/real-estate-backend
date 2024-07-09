@@ -20,13 +20,6 @@ public class Tenant {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-//    un tenant are o lista de cladiri, iar pe fiecare cladire are un pret diferit
-//    de mentenanta si chirie
-//    iar pe fiecare cladire poate sa aiba etaje diferite
-//    iar pe fiecare etaj, suprafata nu e neaparat sa fie toata
-
-    // o pot lua de pe building, floors
-//    private Double rentedSquareMeterS;
     private String name;
 
 //    @ManyToMany(mappedBy = "tenants", fetch = FetchType.LAZY)

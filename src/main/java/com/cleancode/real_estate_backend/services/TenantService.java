@@ -3,6 +3,7 @@ package com.cleancode.real_estate_backend.services;
 import com.cleancode.real_estate_backend.dtos.administrator.building.response.BuildingResponseDTOLite;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.request.TenantRequestDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTO;
+import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTOLite;
 import com.cleancode.real_estate_backend.entities.Building;
 import com.cleancode.real_estate_backend.entities.Floor;
 import com.cleancode.real_estate_backend.entities.RentedFloor;
@@ -28,6 +29,7 @@ public class TenantService {
     private final BuildingRepository buildingRepository;
     private final FloorRepository floorRepository;
     private final RentedFloorRepository rentedFloorRepository;
+    private final RentedFloorService rentedFloorService;
 
     public List<TenantResponseDTO> getTenants() {
 
@@ -42,7 +44,8 @@ public class TenantService {
 
 
         return new TenantResponseDTO(
-                entity.getName());
+                entity.getName(),
+                entity.getRentedFloors().stream().map(rentedFloorService::convertToDTO).toList());
     }
 
 //    public List<TenantResponseDTO> addTenant(TenantRequestDTO tenantRequestDTO) {
@@ -53,7 +56,7 @@ public class TenantService {
 //    }
 
     @Transactional
-    public TenantResponseDTO addTenant(TenantRequestDTO tenantCreationRequest) {
+    public TenantResponseDTOLite addTenant(TenantRequestDTO tenantCreationRequest) {
 
         Tenant tenant = new Tenant();
 
@@ -88,6 +91,6 @@ public class TenantService {
         });
 
         Tenant savedTenant =  tenantRepository.save(tenant);
-        return new TenantResponseDTO(savedTenant.getName());
+        return new TenantResponseDTOLite(savedTenant.getName());
     }
 }

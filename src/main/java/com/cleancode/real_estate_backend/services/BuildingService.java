@@ -71,7 +71,7 @@ public class BuildingService {
 
         return new BuildingResponseDTO(
                 entity.getName(),
-                entity.getFloors().stream().map(floorService::convertToDTO).toList(),
+                entity.getFloors().stream().map(floorService::convertToDTOLite).toList(),
                 entity.getFloors().stream().mapToDouble(Floor::getSize).sum(),
                 entity.getId());
     }

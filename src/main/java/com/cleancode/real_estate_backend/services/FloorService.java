@@ -1,6 +1,9 @@
 package com.cleancode.real_estate_backend.services;
 
+import com.cleancode.real_estate_backend.dtos.administrator.building.response.BuildingResponseDTOLite;
 import com.cleancode.real_estate_backend.dtos.administrator.building.response.FloorResponseDTO;
+import com.cleancode.real_estate_backend.dtos.administrator.building.response.FloorResponseDTOLite;
+import com.cleancode.real_estate_backend.entities.Building;
 import com.cleancode.real_estate_backend.entities.Floor;
 import com.cleancode.real_estate_backend.repositories.FloorRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +18,28 @@ public class FloorService {
     private final FloorRepository floorRepository;
 
 
+    public FloorResponseDTOLite convertToDTOLite(Floor entity) {
+        return new FloorResponseDTOLite(entity.getSize(), entity.getFloorNumber(), entity.getId());
+    }
+
     public FloorResponseDTO convertToDTO(Floor entity) {
-        return new FloorResponseDTO(entity.getSize(), entity.getFloorNumber(), entity.getId());
+
+        Building building = entity.getBuilding();
+
+        BuildingResponseDTOLite buildingResponseDTOLite = new BuildingResponseDTOLite(
+                building.getName(),
+                building.getFloors().size(),
+                building.getFloors().stream().mapToDouble(Floor::getSize).sum(),
+                entity.getId());
+
+        return new FloorResponseDTO(
+                entity.getSize(),
+                entity.getFloorNumber(),
+                entity.getId(),
+                buildingResponseDTOLite
+
+        );
+
+
     }
 }

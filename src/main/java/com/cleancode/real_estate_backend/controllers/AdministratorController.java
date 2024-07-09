@@ -4,6 +4,7 @@ import com.cleancode.real_estate_backend.dtos.administrator.building.request.Bui
 import com.cleancode.real_estate_backend.dtos.administrator.building.response.BuildingResponseDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.request.TenantRequestDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTO;
+import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTOLite;
 import com.cleancode.real_estate_backend.services.BuildingService;
 import com.cleancode.real_estate_backend.services.TenantService;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +47,7 @@ public class AdministratorController {
     @PostMapping("/tenant")
     public ResponseEntity<?> addTenant(@RequestBody TenantRequestDTO tenantRequestDTO) {
 
-        TenantResponseDTO tenant = tenantService.addTenant(tenantRequestDTO);
+        TenantResponseDTOLite tenant = tenantService.addTenant(tenantRequestDTO);
         return ResponseEntity.ok(tenant);
 
     }

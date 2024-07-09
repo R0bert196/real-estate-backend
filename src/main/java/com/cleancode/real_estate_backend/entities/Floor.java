@@ -26,7 +26,7 @@ public class Floor {
     @JoinColumn(name = "building_id", nullable = false)
     private Building building;
 
-    @OneToMany(mappedBy = "floor", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "floor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<RentedFloor> rentedFloors = new LinkedHashSet<>();
 
     @PrePersist
