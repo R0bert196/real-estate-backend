@@ -4,6 +4,7 @@ import com.cleancode.real_estate_backend.dtos.administrator.building.response.Bu
 
 import java.util.List;
 
-public record TenantResponseDTO(String name,
+public record TenantResponseDTO(Long id,
+                                String name,
                                 List<RentedFloorResponseDTO> rentedFloorResponseDTOS) {
 }

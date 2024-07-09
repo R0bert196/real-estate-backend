@@ -35,16 +35,14 @@ public class TenantService {
 
 
         //todo find in functie de administrator
-        List<Tenant> tenants =  tenantRepository.findAllWithRentedFloorsAndFloors();
-       return tenants.stream().map(this::convertToDTO).toList();
+        List<Tenant> tenants = tenantRepository.findAllWithRentedFloorsAndFloors();
+        return tenants.stream().map(this::convertToDTO).toList();
     }
 
     private TenantResponseDTO convertToDTO(Tenant entity) {
 
-//        List <BuildingResponseDTOLite> buildingResponseDTOLites =  entity.getBuildings().stream().map(buildingService::convertToDTOLite).toList();
-
-
         return new TenantResponseDTO(
+                entity.getId(),
                 entity.getName(),
                 entity.getRentedFloors().stream().map(rentedFloorService::convertToDTO).toList());
     }
@@ -91,7 +89,17 @@ public class TenantService {
 
         });
 
-        Tenant savedTenant =  tenantRepository.save(tenant);
+        Tenant savedTenant = tenantRepository.save(tenant);
+
         return new TenantResponseDTOLite(savedTenant.getName());
+    }
+
+    public void deleteTenant(Long tenantId) {
+        try {
+
+            tenantRepository.deleteById(tenantId);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Tenant id is null");
+        }
     }
 }

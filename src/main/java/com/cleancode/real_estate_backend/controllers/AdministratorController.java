@@ -51,4 +51,11 @@ public class AdministratorController {
         return ResponseEntity.ok(tenant);
 
     }
+
+    @DeleteMapping("/tenant/{tenantId}")
+    public ResponseEntity<?> deleteTenant(@PathVariable(value="tenantId") Long tenantId){
+
+        tenantService.deleteTenant(tenantId);
+        return ResponseEntity.ok(null);
+    }
 }
