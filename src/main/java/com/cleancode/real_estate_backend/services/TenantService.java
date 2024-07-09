@@ -35,7 +35,8 @@ public class TenantService {
 
 
         //todo find in functie de administrator
-       return tenantRepository.findAll().stream().map(this::convertToDTO).toList();
+        List<Tenant> tenants =  tenantRepository.findAllWithRentedFloorsAndFloors();
+       return tenants.stream().map(this::convertToDTO).toList();
     }
 
     private TenantResponseDTO convertToDTO(Tenant entity) {

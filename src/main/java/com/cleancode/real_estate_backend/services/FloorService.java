@@ -28,9 +28,9 @@ public class FloorService {
 
         BuildingResponseDTOLite buildingResponseDTOLite = new BuildingResponseDTOLite(
                 building.getName(),
-                building.getFloors().size(),
-                building.getFloors().stream().mapToDouble(Floor::getSize).sum(),
-                entity.getId());
+                null,
+                null,
+                building.getId());
 
         return new FloorResponseDTO(
                 entity.getSize(),
