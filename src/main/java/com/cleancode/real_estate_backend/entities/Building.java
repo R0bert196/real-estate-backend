@@ -26,11 +26,4 @@ public class Building {
     @OneToMany(mappedBy = "building", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Floor> floors = new LinkedHashSet<>();
 
-//    @ManyToMany
-//    @JoinTable(name = "Building_tenants",
-//            joinColumns = @JoinColumn(name = "building_id"),
-//            inverseJoinColumns = @JoinColumn(name = "tenants_id"))
-//    private Set<Tenant> tenants = new LinkedHashSet<>();
-
-
 }

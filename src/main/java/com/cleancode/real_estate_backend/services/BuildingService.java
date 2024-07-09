@@ -86,6 +86,7 @@ public class BuildingService {
 
     public List<BuildingResponseDTO> getBuildings() {
 
-        return buildingRepository.findAll().stream().map(this::convertToDTO).toList();
+        return buildingRepository.findAllWithFloors().stream().map(this::convertToDTO).toList();
+//        return buildingRepository.findAll().stream().map(this::convertToDTO).toList();
     }
 }
