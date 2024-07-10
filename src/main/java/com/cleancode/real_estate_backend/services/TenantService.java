@@ -135,8 +135,10 @@ public class TenantService {
                             rentedFloor.setRentedSize(floorDTO.selectedSize());
                             rentedFloor.setSquareMeterPrice(building.squareMeterPrice());
                             rentedFloor.setMaintenanceSquareMeterPrice(building.maintenanceSquareMeterPrice());
-                            rentedFloor.setTenant(tenant); // Set the bidirectional relationship
+
                             rentedFloor.setId(floorDTO.selectedFloorId());
+
+                            rentedFloor.setTenant(tenant); // Set the bidirectional relationship
 
                             // Set the floor association
                             Floor floorEntity = floorRepository.findById(floorDTO.selectedFloorId())
@@ -154,12 +156,18 @@ public class TenantService {
 
         tenant.getRentedFloors().addAll(rentedFloors);
 
-        // Save tenant to persist changes
         tenantRepository.save(tenant);
 
-        // Return a DTO or response as needed
         return new TenantResponseDTOLite(tenant.getName());
     }
 
 
+    public void deleteBuilding(Long buildingId) {
+        try {
+            buildingRepository.deleteById(buildingId);
+
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Building id is null");
+        }
+    }
 }

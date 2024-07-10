@@ -23,11 +23,6 @@ public class AdministratorController {
     private final BuildingService buildingService;
     private final TenantService tenantService;
 
-    @PostMapping("/building")
-    public ResponseEntity<?> addBuilding(@RequestBody BuildingRequestDTO buildingRequestDTO) {
-
-        return ResponseEntity.ok(buildingService.addBuilding(buildingRequestDTO));
-    }
 
     @GetMapping("/building")
     public ResponseEntity<?> getBuildings() {
@@ -35,6 +30,19 @@ public class AdministratorController {
         List<BuildingResponseDTO> buildings = buildingService.getBuildings();
 
         return ResponseEntity.ok(buildings);
+    }
+
+    @PostMapping("/building")
+    public ResponseEntity<?> addBuilding(@RequestBody BuildingRequestDTO buildingRequestDTO) {
+
+        return ResponseEntity.ok(buildingService.addBuilding(buildingRequestDTO));
+    }
+
+    @DeleteMapping("/building/{buildingId}")
+    public ResponseEntity<?> deleteBuilding(@PathVariable(value="buildingId") Long buildingId){
+
+        tenantService.deleteBuilding(buildingId);
+        return ResponseEntity.ok(null);
     }
 
     @GetMapping("/tenant")
