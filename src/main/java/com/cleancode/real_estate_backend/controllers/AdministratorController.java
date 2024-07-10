@@ -52,6 +52,15 @@ public class AdministratorController {
 
     }
 
+    @PutMapping("/tenant/{tenantId}")
+    public ResponseEntity<?> editTenant(@PathVariable(value="tenantId") Long tenantId,
+                                        @RequestBody TenantRequestDTO tenantRequestDTO) {
+
+        System.out.println(tenantId);
+        System.out.println(tenantRequestDTO);
+        return ResponseEntity.ok(null);
+    }
+
     @DeleteMapping("/tenant/{tenantId}")
     public ResponseEntity<?> deleteTenant(@PathVariable(value="tenantId") Long tenantId){
 
