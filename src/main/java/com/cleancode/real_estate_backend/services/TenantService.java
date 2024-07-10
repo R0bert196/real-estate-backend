@@ -2,6 +2,8 @@ package com.cleancode.real_estate_backend.services;
 
 import com.cleancode.real_estate_backend.dtos.administrator.building.response.BuildingResponseDTOLite;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.request.TenantRequestDTO;
+import com.cleancode.real_estate_backend.dtos.administrator.tenants.request.TenantSelectedBuildingsRequestDTO;
+import com.cleancode.real_estate_backend.dtos.administrator.tenants.request.TenantSelectedFloorsRequestDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTOLite;
 import com.cleancode.real_estate_backend.entities.Building;
@@ -12,12 +14,17 @@ import com.cleancode.real_estate_backend.repositories.BuildingRepository;
 import com.cleancode.real_estate_backend.repositories.FloorRepository;
 import com.cleancode.real_estate_backend.repositories.RentedFloorRepository;
 import com.cleancode.real_estate_backend.repositories.TenantRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -79,7 +86,7 @@ public class TenantService {
                         .build();
 
                 tenant.getRentedFloors().add(rentedFloor);
-                floor.rentFloor(floorRequest.selectedSize());
+                floor.rentFloor(0.0, floorRequest.selectedSize());
                 rentedFloorRepository.save(rentedFloor);
 
                 floorRepository.save(floor);
@@ -102,4 +109,57 @@ public class TenantService {
             throw new RuntimeException("Tenant id is null");
         }
     }
+
+    public TenantResponseDTOLite editTenant(Long tenantId, TenantRequestDTO tenantRequestDTO) {
+        Tenant tenant = tenantRepository.findWithRentedFloorsAndFloorsById(tenantId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        tenant.setName(tenantRequestDTO.tenantName());
+
+
+        // Retrieve existing rentedFloors to manage available space correctly
+        Map<Long, Double> existingRentedSizes = tenant.getRentedFloors().stream()
+                .collect(Collectors.toMap(
+                        rentedFloor -> rentedFloor.getFloor().getId(),
+                        RentedFloor::getRentedSize
+                ));
+
+        // Clear existing rentedFloors to avoid orphaned entities
+        tenant.getRentedFloors().clear();
+
+        // Map and save new rentedFloors
+        Set<RentedFloor> rentedFloors = tenantRequestDTO.buildings().stream()
+                .flatMap(building -> building.selectedFloors().stream()
+                        .map(floorDTO -> {
+                            RentedFloor rentedFloor = new RentedFloor();
+                            rentedFloor.setRentedSize(floorDTO.selectedSize());
+                            rentedFloor.setSquareMeterPrice(building.squareMeterPrice());
+                            rentedFloor.setMaintenanceSquareMeterPrice(building.maintenanceSquareMeterPrice());
+                            rentedFloor.setTenant(tenant); // Set the bidirectional relationship
+                            rentedFloor.setId(floorDTO.selectedFloorId());
+
+                            // Set the floor association
+                            Floor floorEntity = floorRepository.findById(floorDTO.selectedFloorId())
+                                    .orElseThrow(EntityNotFoundException::new);
+
+                            // Adjust floor remaining size
+                            Double previousRentedSize = existingRentedSizes.getOrDefault(floorDTO.selectedFloorId(), 0.0);
+                            floorEntity.rentFloor(previousRentedSize, floorDTO.selectedSize());
+
+                            rentedFloor.setFloor(floorEntity);
+
+                            return rentedFloor;
+                        }))
+                .collect(Collectors.toSet());
+
+        tenant.getRentedFloors().addAll(rentedFloors);
+
+        // Save tenant to persist changes
+        tenantRepository.save(tenant);
+
+        // Return a DTO or response as needed
+        return new TenantResponseDTOLite(tenant.getName());
+    }
+
+
 }

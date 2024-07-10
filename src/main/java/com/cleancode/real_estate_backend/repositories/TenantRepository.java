@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface TenantRepository extends JpaRepository<Tenant, Long> {
 
@@ -13,4 +14,11 @@ public interface TenantRepository extends JpaRepository<Tenant, Long> {
             "LEFT JOIN FETCH t.rentedFloors rf " +
             "LEFT JOIN FETCH rf.floor")
     List<Tenant> findAllWithRentedFloorsAndFloors();
+
+
+    @Query("SELECT DISTINCT t FROM Tenant t " +
+            "LEFT JOIN FETCH t.rentedFloors rf " +
+            "LEFT JOIN FETCH rf.floor " +
+            "WHERE t.id = :id")
+    Optional<Tenant> findWithRentedFloorsAndFloorsById(Long id);
 }

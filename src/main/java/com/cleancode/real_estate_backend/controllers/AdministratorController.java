@@ -56,9 +56,8 @@ public class AdministratorController {
     public ResponseEntity<?> editTenant(@PathVariable(value="tenantId") Long tenantId,
                                         @RequestBody TenantRequestDTO tenantRequestDTO) {
 
-        System.out.println(tenantId);
-        System.out.println(tenantRequestDTO);
-        return ResponseEntity.ok(null);
+        TenantResponseDTOLite tenant =  tenantService.editTenant(tenantId, tenantRequestDTO);
+        return ResponseEntity.ok(tenant);
     }
 
     @DeleteMapping("/tenant/{tenantId}")

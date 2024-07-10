@@ -34,9 +34,13 @@ public class Floor {
         this.availableSize = this.size;
     }
 
-    public void rentFloor(Double rentedSize) {
-        if (rentedSize <= this.availableSize) {
-            this.availableSize -= rentedSize;
+    public void rentFloor(Double previousRentedSize, Double newRentedSize) {
+        // Add back the previous rented size to availableSize
+        this.availableSize += previousRentedSize;
+
+        // Check if the new rented size can be accommodated
+        if (newRentedSize <= this.availableSize) {
+            this.availableSize -= newRentedSize;
         } else {
             throw new RuntimeException("Not enough available space on this floor.");
         }
