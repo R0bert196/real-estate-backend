@@ -73,6 +73,7 @@ public class BuildingService {
                 entity.getName(),
                 entity.getFloors().stream().map(floorService::convertToDTOLite).toList(),
                 entity.getFloors().stream().mapToDouble(Floor::getSize).sum(),
+                entity.getAddress(),
                 entity.getId());
     }
 
