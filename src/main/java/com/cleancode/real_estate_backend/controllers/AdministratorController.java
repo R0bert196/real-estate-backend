@@ -38,8 +38,19 @@ public class AdministratorController {
         return ResponseEntity.ok(buildingService.addBuilding(buildingRequestDTO));
     }
 
+    @PutMapping("/building/{buildingId}")
+    public ResponseEntity<?> editBuilding(
+            @PathVariable(value = "buildingId") Long buildingId,
+            @RequestBody BuildingRequestDTO buildingRequestDTO) {
+
+        System.out.println(buildingId);
+        System.out.println(buildingRequestDTO);
+        return null;
+    }
+
+
     @DeleteMapping("/building/{buildingId}")
-    public ResponseEntity<?> deleteBuilding(@PathVariable(value="buildingId") Long buildingId){
+    public ResponseEntity<?> deleteBuilding(@PathVariable(value = "buildingId") Long buildingId) {
 
         tenantService.deleteBuilding(buildingId);
         return ResponseEntity.ok(null);
@@ -61,15 +72,15 @@ public class AdministratorController {
     }
 
     @PutMapping("/tenant/{tenantId}")
-    public ResponseEntity<?> editTenant(@PathVariable(value="tenantId") Long tenantId,
+    public ResponseEntity<?> editTenant(@PathVariable(value = "tenantId") Long tenantId,
                                         @RequestBody TenantRequestDTO tenantRequestDTO) {
 
-        TenantResponseDTOLite tenant =  tenantService.editTenant(tenantId, tenantRequestDTO);
+        TenantResponseDTOLite tenant = tenantService.editTenant(tenantId, tenantRequestDTO);
         return ResponseEntity.ok(tenant);
     }
 
     @DeleteMapping("/tenant/{tenantId}")
-    public ResponseEntity<?> deleteTenant(@PathVariable(value="tenantId") Long tenantId){
+    public ResponseEntity<?> deleteTenant(@PathVariable(value = "tenantId") Long tenantId) {
 
         tenantService.deleteTenant(tenantId);
         return ResponseEntity.ok(null);

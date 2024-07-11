@@ -80,8 +80,8 @@ public class BuildingService {
     private Floor convertToEntity(FloorRequestDTO dto) {
 
         return Floor.builder()
-                .floorNumber(Integer.valueOf(dto.floorNumber()))
-                .size(Double.valueOf(dto.floorSize()))
+                .floorNumber(Integer.valueOf(dto.number()))
+                .size(Double.valueOf(dto.size()))
                 .build();
     }
 

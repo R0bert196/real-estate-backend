@@ -1,9 +1,6 @@
 package com.cleancode.real_estate_backend.services;
 
-import com.cleancode.real_estate_backend.dtos.administrator.building.response.BuildingResponseDTOLite;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.request.TenantRequestDTO;
-import com.cleancode.real_estate_backend.dtos.administrator.tenants.request.TenantSelectedBuildingsRequestDTO;
-import com.cleancode.real_estate_backend.dtos.administrator.tenants.request.TenantSelectedFloorsRequestDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTOLite;
 import com.cleancode.real_estate_backend.entities.Building;
@@ -20,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -74,8 +70,8 @@ public class TenantService {
                     .orElseThrow(() -> new RuntimeException("Building not found with id: " + buildingRequest.selectedBuildingId()));
 
             buildingRequest.selectedFloors().forEach(floorRequest -> {
-                Floor floor = floorRepository.findById(floorRequest.selectedFloorId())
-                        .orElseThrow(() -> new RuntimeException("Floor not found with id: " + floorRequest.selectedFloorId()));
+                Floor floor = floorRepository.findById(floorRequest.id())
+                        .orElseThrow(() -> new RuntimeException("Floor not found with id: " + floorRequest.id()));
 
                 RentedFloor rentedFloor = RentedFloor.builder()
                         .floor(floor)
@@ -136,16 +132,16 @@ public class TenantService {
                             rentedFloor.setSquareMeterPrice(building.squareMeterPrice());
                             rentedFloor.setMaintenanceSquareMeterPrice(building.maintenanceSquareMeterPrice());
 
-                            rentedFloor.setId(floorDTO.selectedFloorId());
+                            rentedFloor.setId(floorDTO.id());
 
                             rentedFloor.setTenant(tenant); // Set the bidirectional relationship
 
                             // Set the floor association
-                            Floor floorEntity = floorRepository.findById(floorDTO.selectedFloorId())
+                            Floor floorEntity = floorRepository.findById(floorDTO.id())
                                     .orElseThrow(EntityNotFoundException::new);
 
                             // Adjust floor remaining size
-                            Double previousRentedSize = existingRentedSizes.getOrDefault(floorDTO.selectedFloorId(), 0.0);
+                            Double previousRentedSize = existingRentedSizes.getOrDefault(floorDTO.id(), 0.0);
                             floorEntity.rentFloor(previousRentedSize, floorDTO.selectedSize());
 
                             rentedFloor.setFloor(floorEntity);
