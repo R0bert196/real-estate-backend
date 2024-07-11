@@ -36,6 +36,7 @@ public class FloorService {
                 entity.getSize(),
                 entity.getFloorNumber(),
                 entity.getId(),
+                entity.getAvailableSize(),
                 buildingResponseDTOLite
 
         );
