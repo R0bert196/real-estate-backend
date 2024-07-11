@@ -106,7 +106,7 @@ public class TenantService {
         }
     }
 
-    public TenantResponseDTOLite editTenant(Long tenantId, TenantRequestDTO tenantRequestDTO) {
+    public TenantResponseDTOLite updateTenant(Long tenantId, TenantRequestDTO tenantRequestDTO) {
         Tenant tenant = tenantRepository.findWithRentedFloorsAndFloorsById(tenantId)
                 .orElseThrow(EntityNotFoundException::new);
 

@@ -11,7 +11,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,13 +43,83 @@ public class BuildingService {
         }
     }
 
+    public BuildingResponseDTOLite updateBuilding(Long buildingId, BuildingRequestDTO buildingRequestDTO) {
+        try {
+
+            Optional<Building> buildingOpt = buildingRepository.findById(buildingId);
+
+            if (buildingOpt.isEmpty()) {
+                throw new IllegalArgumentException("Building not found");
+            }
+
+            Building building = buildingOpt.get();
+
+            building.setName(buildingRequestDTO.buildingName());
+            building.setAddress(buildingRequestDTO.address());
+
+            Set<Long> requestFloorIds = buildingRequestDTO.floors().stream()
+                    .map(FloorRequestDTO::id)
+                    .collect(Collectors.toSet());
+
+            Set<Floor> existingFloors = building.getFloors();
+            Set<Floor> floorsToRemove = new HashSet<>();
+
+            for (Floor existingFloor : existingFloors) {
+                if (!requestFloorIds.contains(existingFloor.getId())) {
+                    floorsToRemove.add(existingFloor);
+                }
+            }
+
+            existingFloors.removeAll(floorsToRemove);
+
+            for (FloorRequestDTO floorRequestDTO : buildingRequestDTO.floors()) {
+
+                Optional<Floor> existingFloorOpt = existingFloors.stream()
+                        .filter(floor -> floor.getId().equals(floorRequestDTO.id()))
+                        .findFirst();
+
+                if (existingFloorOpt.isPresent()) {
+
+                    // Update existing floor
+                    Floor floor = existingFloorOpt.get();
+
+                    floor.setSize(Double.parseDouble(floorRequestDTO.size()));
+                    floor.setFloorNumber(Integer.parseInt(floorRequestDTO.number()));
+                } else {
+
+                    // Add new floor
+                    Floor newFloor = new Floor();
+
+                    newFloor.setSize(Double.parseDouble(floorRequestDTO.size()));
+                    newFloor.setFloorNumber(Integer.parseInt(floorRequestDTO.number()));
+                    newFloor.setBuilding(building);
+                    existingFloors.add(newFloor);
+                }
+            }
+
+            building.setFloors(existingFloors);
+
+            Building savedBuilding = buildingRepository.save(building);
+            Set<Floor> savedFloors = savedBuilding.getFloors();
+
+            return new BuildingResponseDTOLite(savedBuilding.getName(),
+                    savedFloors.size(),
+                    savedFloors.stream().mapToDouble(Floor::getSize).sum(),
+                    savedBuilding.getId());
+
+        } catch (IllegalArgumentException e) {
+            log.error("Error while updating building: {}", e.getMessage());
+            throw new IllegalArgumentException("Error while updating building", e);
+        }
+    }
+
     private Building convertToEntity(BuildingRequestDTO dto) {
 
         Building building = Building.builder()
                 .name(dto.buildingName())
                 .address(dto.address())
                 .build();
-        Set<Floor> floors =  dto.floors().stream().map(this::convertToEntity).collect(Collectors.toSet());
+        Set<Floor> floors = dto.floors().stream().map(this::convertToEntity).collect(Collectors.toSet());
 
         // set floors to building
         building.setFloors(floors);
@@ -90,4 +162,6 @@ public class BuildingService {
         return buildingRepository.findAllWithFloors().stream().map(this::convertToDTO).toList();
 //        return buildingRepository.findAll().stream().map(this::convertToDTO).toList();
     }
+
+
 }

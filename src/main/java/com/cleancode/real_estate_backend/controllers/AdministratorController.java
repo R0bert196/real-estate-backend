@@ -39,13 +39,13 @@ public class AdministratorController {
     }
 
     @PutMapping("/building/{buildingId}")
-    public ResponseEntity<?> editBuilding(
+    public ResponseEntity<?> updateBuilding(
             @PathVariable(value = "buildingId") Long buildingId,
             @RequestBody BuildingRequestDTO buildingRequestDTO) {
 
         System.out.println(buildingId);
         System.out.println(buildingRequestDTO);
-        return null;
+        return ResponseEntity.ok(buildingService.updateBuilding(buildingId, buildingRequestDTO));
     }
 
 
@@ -72,10 +72,10 @@ public class AdministratorController {
     }
 
     @PutMapping("/tenant/{tenantId}")
-    public ResponseEntity<?> editTenant(@PathVariable(value = "tenantId") Long tenantId,
-                                        @RequestBody TenantRequestDTO tenantRequestDTO) {
+    public ResponseEntity<?> updateTenant(@PathVariable(value = "tenantId") Long tenantId,
+                                          @RequestBody TenantRequestDTO tenantRequestDTO) {
 
-        TenantResponseDTOLite tenant = tenantService.editTenant(tenantId, tenantRequestDTO);
+        TenantResponseDTOLite tenant = tenantService.updateTenant(tenantId, tenantRequestDTO);
         return ResponseEntity.ok(tenant);
     }
 
