@@ -67,11 +67,11 @@ public class TenantService {
         tenantCreationRequest.buildings().forEach(buildingRequest -> {
 
             Building building = buildingRepository.findById(buildingRequest.selectedBuildingId())
-                    .orElseThrow(() -> new RuntimeException("Building not found with id: " + buildingRequest.selectedBuildingId()));
+                    .orElseThrow(() -> new RuntimeException("Building not found with selectedFloorId: " + buildingRequest.selectedBuildingId()));
 
             buildingRequest.selectedFloors().forEach(floorRequest -> {
-                Floor floor = floorRepository.findById(floorRequest.id())
-                        .orElseThrow(() -> new RuntimeException("Floor not found with id: " + floorRequest.id()));
+                Floor floor = floorRepository.findById(floorRequest.selectedFloorId())
+                        .orElseThrow(() -> new RuntimeException("Floor not found with selectedFloorId: " + floorRequest.selectedFloorId()));
 
                 RentedFloor rentedFloor = RentedFloor.builder()
                         .floor(floor)
@@ -102,7 +102,7 @@ public class TenantService {
 
             tenantRepository.deleteById(tenantId);
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Tenant id is null");
+            throw new RuntimeException("Tenant selectedFloorId is null");
         }
     }
 
@@ -132,16 +132,16 @@ public class TenantService {
                             rentedFloor.setSquareMeterPrice(building.squareMeterPrice());
                             rentedFloor.setMaintenanceSquareMeterPrice(building.maintenanceSquareMeterPrice());
 
-                            rentedFloor.setId(floorDTO.id());
+                            rentedFloor.setId(floorDTO.selectedFloorId());
 
                             rentedFloor.setTenant(tenant); // Set the bidirectional relationship
 
                             // Set the floor association
-                            Floor floorEntity = floorRepository.findById(floorDTO.id())
+                            Floor floorEntity = floorRepository.findById(floorDTO.selectedFloorId())
                                     .orElseThrow(EntityNotFoundException::new);
 
                             // Adjust floor remaining size
-                            Double previousRentedSize = existingRentedSizes.getOrDefault(floorDTO.id(), 0.0);
+                            Double previousRentedSize = existingRentedSizes.getOrDefault(floorDTO.selectedFloorId(), 0.0);
                             floorEntity.rentFloor(previousRentedSize, floorDTO.selectedSize());
 
                             rentedFloor.setFloor(floorEntity);
@@ -163,7 +163,7 @@ public class TenantService {
             buildingRepository.deleteById(buildingId);
 
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Building id is null");
+            throw new RuntimeException("Building selectedFloorId is null");
         }
     }
 }

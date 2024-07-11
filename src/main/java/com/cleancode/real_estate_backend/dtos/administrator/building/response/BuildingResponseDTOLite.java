@@ -5,7 +5,7 @@ public record BuildingResponseDTOLite(String name,
                                       Double squareMeter,
                                       Long id) {
 
-    // Additional constructor that only takes name and id
+    // Additional constructor that only takes name and selectedFloorId
     public BuildingResponseDTOLite(String name, Long id) {
         this(name, null, null, id);
     }
