@@ -21,6 +21,7 @@ public class Tenant {
     private Long id;
 
     private String name;
+    private String phoneNumber;
 
 //    @ManyToMany(mappedBy = "tenants", fetch = FetchType.LAZY)
 //    private Set<Building> buildings = new LinkedHashSet<>();
