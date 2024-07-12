@@ -1,6 +1,7 @@
 package com.cleancode.real_estate_backend.entities;
 
-import com.cleancode.real_estate_backend.entities.enums.TicketSeverity;
+import com.cleancode.real_estate_backend.enums.TicketSeverity;
+import com.cleancode.real_estate_backend.enums.TicketStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,6 +22,9 @@ public class Ticket {
 
     @Enumerated(EnumType.STRING)
     private TicketSeverity severity;
+
+    @Enumerated(EnumType.STRING)
+    private TicketStatus STATUS;
 
     private String message;
 

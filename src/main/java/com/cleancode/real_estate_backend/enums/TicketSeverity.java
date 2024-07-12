@@ -1,4 +1,4 @@
-package com.cleancode.real_estate_backend.entities.enums;
+package com.cleancode.real_estate_backend.enums;
 
 public enum TicketSeverity {
     LOW,
