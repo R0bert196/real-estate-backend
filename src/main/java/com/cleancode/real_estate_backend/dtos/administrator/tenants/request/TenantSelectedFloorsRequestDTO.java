@@ -1,7 +1,0 @@
-package com.cleancode.real_estate_backend.dtos.administrator.tenants.request;
-
-public record TenantSelectedFloorsRequestDTO(Integer number,
-                                             Integer size,
-                                             Double selectedSize,
-                                             Long selectedFloorId) {
-}

@@ -19,8 +19,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 
 @Service
 @Slf4j
@@ -64,31 +66,29 @@ public class TenantService {
 
         tenant.setName(tenantCreationRequest.tenantName());
 
-        tenantCreationRequest.buildings().forEach(buildingRequest -> {
 
-            Building building = buildingRepository.findById(buildingRequest.selectedBuildingId())
-                    .orElseThrow(() -> new RuntimeException("Building not found with selectedFloorId: " + buildingRequest.selectedBuildingId()));
+        tenantCreationRequest.rentedFloors().forEach(rentedFloorsRequestDTO -> {
 
-            buildingRequest.selectedFloors().forEach(floorRequest -> {
-                Floor floor = floorRepository.findById(floorRequest.selectedFloorId())
-                        .orElseThrow(() -> new RuntimeException("Floor not found with selectedFloorId: " + floorRequest.selectedFloorId()));
+            Building building = buildingRepository.findById(rentedFloorsRequestDTO.selectedBuildingId())
+                    .orElseThrow(() -> new RuntimeException("Building id not found"));
 
-                RentedFloor rentedFloor = RentedFloor.builder()
-                        .floor(floor)
-                        .tenant(tenant)
-                        .rentedSize(floorRequest.selectedSize())
-                        .squareMeterPrice(buildingRequest.squareMeterPrice())
-                        .maintenanceSquareMeterPrice(buildingRequest.maintenanceSquareMeterPrice())
-                        .build();
+            Floor floor = floorRepository.findById(rentedFloorsRequestDTO.selectedFloorId())
+                    .orElseThrow(() -> new RuntimeException("Floor id not found"));
 
-                tenant.getRentedFloors().add(rentedFloor);
-                floor.rentFloor(0.0, floorRequest.selectedSize());
-                rentedFloorRepository.save(rentedFloor);
+            RentedFloor rentedFloor = RentedFloor.builder()
+                    .floor(floor)
+                    .tenant(tenant)
+                    .rentedSize(rentedFloorsRequestDTO.rentedSize())
+                    .squareMeterPrice(rentedFloorsRequestDTO.squareMeterPrice())
+                    .maintenanceSquareMeterPrice(rentedFloorsRequestDTO.maintenanceSquareMeterPrice())
+                    .build();
 
-                floorRepository.save(floor);
+            tenant.getRentedFloors().add(rentedFloor);
+            floor.rentFloor(0.0, rentedFloorsRequestDTO.rentedSize());
+            rentedFloorRepository.save(rentedFloor);
 
+            floorRepository.save(floor);
 
-            });
 
         });
 
@@ -107,6 +107,7 @@ public class TenantService {
     }
 
     public TenantResponseDTOLite updateTenant(Long tenantId, TenantRequestDTO tenantRequestDTO) {
+
         Tenant tenant = tenantRepository.findWithRentedFloorsAndFloorsById(tenantId)
                 .orElseThrow(EntityNotFoundException::new);
 
@@ -124,33 +125,42 @@ public class TenantService {
         tenant.getRentedFloors().clear();
 
         // Map and save new rentedFloors
-        Set<RentedFloor> rentedFloors = tenantRequestDTO.buildings().stream()
-                .flatMap(building -> building.selectedFloors().stream()
-                        .map(floorDTO -> {
-                            RentedFloor rentedFloor = new RentedFloor();
-                            rentedFloor.setRentedSize(floorDTO.selectedSize());
-                            rentedFloor.setSquareMeterPrice(building.squareMeterPrice());
-                            rentedFloor.setMaintenanceSquareMeterPrice(building.maintenanceSquareMeterPrice());
+        Set<RentedFloor> rentedFloors = tenantRequestDTO.rentedFloors().stream()
+                .map(rentedFloorRequest -> {
+                    RentedFloor rentedFloor = new RentedFloor();
+                    rentedFloor.setRentedSize(rentedFloorRequest.rentedSize());
+                    rentedFloor.setSquareMeterPrice(rentedFloorRequest.squareMeterPrice());
+                    rentedFloor.setMaintenanceSquareMeterPrice(rentedFloorRequest.maintenanceSquareMeterPrice());
 
-                            rentedFloor.setId(floorDTO.selectedFloorId());
+                    rentedFloor.setId(rentedFloorRequest.selectedFloorId());
 
-                            rentedFloor.setTenant(tenant); // Set the bidirectional relationship
+                    rentedFloor.setTenant(tenant); // Set the bidirectional relationship
 
-                            // Set the floor association
-                            Floor floorEntity = floorRepository.findById(floorDTO.selectedFloorId())
-                                    .orElseThrow(EntityNotFoundException::new);
+                    // Set the floor association
+                    Floor floorEntity = floorRepository.findById(rentedFloorRequest.selectedFloorId())
+                            .orElseThrow(EntityNotFoundException::new);
 
-                            // Adjust floor remaining size
-                            Double previousRentedSize = existingRentedSizes.getOrDefault(floorDTO.selectedFloorId(), 0.0);
-                            floorEntity.rentFloor(previousRentedSize, floorDTO.selectedSize());
+                    // Adjust floor remaining size
+                    Double previousRentedSize = existingRentedSizes.getOrDefault(rentedFloorRequest.selectedFloorId(), 0.0);
+                    floorEntity.rentFloor(previousRentedSize, rentedFloorRequest.rentedSize());
 
-                            rentedFloor.setFloor(floorEntity);
+                    //remove floor key if its values has been only updated
+                    existingRentedSizes.remove(rentedFloorRequest.selectedFloorId());
 
-                            return rentedFloor;
-                        }))
+                    rentedFloor.setFloor(floorEntity);
+
+                    return rentedFloor;
+                })
                 .collect(Collectors.toSet());
 
         tenant.getRentedFloors().addAll(rentedFloors);
+
+        // give back the available sizes to the deleted floors
+        existingRentedSizes.forEach((key, value) -> {
+            Floor floor = floorRepository.findById(key).orElseThrow(EntityNotFoundException::new);
+            floor.rentFloor(value, 0.0);
+
+        });
 
         tenantRepository.save(tenant);
 
