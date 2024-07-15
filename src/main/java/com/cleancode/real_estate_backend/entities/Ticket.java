@@ -35,11 +35,11 @@ public class Ticket {
     @ElementCollection
     private Set<String> photoFileNames = new HashSet<>();
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", nullable = false, unique = true)
     private AppUser creator;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "responsible_manager_id", nullable = false, unique = true)
     private AppUser responsibleManager;
 
