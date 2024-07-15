@@ -17,6 +17,7 @@ public class RentedFloorService {
     RentedFloorResponseDTO convertToDTO(RentedFloor entity) {
 
         return new RentedFloorResponseDTO(
+                entity.getId(),
                 entity.getRentedSize(),
                 entity.getSquareMeterPrice(),
                 entity.getMaintenanceSquareMeterPrice(),
