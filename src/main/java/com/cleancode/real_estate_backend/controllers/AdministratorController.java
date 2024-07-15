@@ -5,8 +5,10 @@ import com.cleancode.real_estate_backend.dtos.administrator.building.response.Bu
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.request.TenantRequestDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTOLite;
+import com.cleancode.real_estate_backend.dtos.administrator.ticket.response.TicketResponseDTOView;
 import com.cleancode.real_estate_backend.services.BuildingService;
 import com.cleancode.real_estate_backend.services.TenantService;
+import com.cleancode.real_estate_backend.services.TicketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,7 @@ public class AdministratorController {
 
     private final BuildingService buildingService;
     private final TenantService tenantService;
+    private final TicketService ticketService;
 
 
     @GetMapping("/building")
@@ -84,5 +87,12 @@ public class AdministratorController {
 
         tenantService.deleteTenant(tenantId);
         return ResponseEntity.ok(null);
+    }
+
+    @GetMapping("/ticket")
+    public ResponseEntity<?> getTickets() {
+
+        List<TicketResponseDTOView> ticketResponseDTOViews = ticketService.getTicketsView();
+        return ResponseEntity.ok(ticketResponseDTOViews);
     }
 }
