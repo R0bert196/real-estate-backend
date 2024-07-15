@@ -39,7 +39,7 @@ public class TenantService {
 
 
         //todo find in functie de administrator
-        List<Tenant> tenants = tenantRepository.findAllWithRentedFloorsAndFloors();
+        List<Tenant> tenants = tenantRepository.findAllWithRentedFloorsAndFloorsAndBuilding();
         return tenants.stream().map(this::convertToDTO).toList();
     }
 
