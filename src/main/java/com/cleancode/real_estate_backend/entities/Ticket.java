@@ -30,6 +30,8 @@ public class Ticket {
     @Enumerated(EnumType.STRING)
     private TicketDepartment department;
 
+    private String subject;
+
     private String message;
 
     @ElementCollection

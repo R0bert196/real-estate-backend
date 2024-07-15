@@ -21,6 +21,7 @@ public class TicketService {
 
         return new TicketResponseDTOView(
                 ticket.getId(),
+                ticket.getSubject(),
                 ticket.getSeverity().toString(),
                 ticket.getStatus().toString(),
                 ticket.getCreator().getId(),
