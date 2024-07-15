@@ -6,6 +6,8 @@ import com.cleancode.real_estate_backend.repositories.RentedFloorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 public class RentedFloorService {
@@ -23,5 +25,10 @@ public class RentedFloorService {
                 entity.getMaintenanceSquareMeterPrice(),
                 floorService.convertToDTO(entity.getFloor())
         );
+    }
+
+    public List<RentedFloorResponseDTO> getRentedFloors() {
+
+        return rentedFloorRepository.findAllWithFloorAndBuilding().stream().map(this::convertToDTO).toList();
     }
 }
