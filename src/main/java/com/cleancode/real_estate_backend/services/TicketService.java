@@ -125,18 +125,24 @@ public class TicketService {
                 throw new RuntimeException(e);
             }
 
+            AppUserResponseDTOLite messageCreator = new AppUserResponseDTOLite(
+                    ticketMessage.getAppUser().getId(),
+                    ticketMessage.getAppUser().getEmail(),
+                    ticketMessage.getAppUser().getName());
+
             TicketMessageResponseDTO ticketMessageResponseDTO = new TicketMessageResponseDTO(
                     ticketMessage.getId(),
                     ticketMessage.getMessage(),
                     ticketMessage.getCreateTs(),
-                    photos
+                    photos,
+                    messageCreator
             );
 
             ticketMessageResponseDTOS.add(ticketMessageResponseDTO);
 
         });
 
-        AppUserResponseDTOLite creator = new AppUserResponseDTOLite(
+        AppUserResponseDTOLite ticketCreator = new AppUserResponseDTOLite(
                 ticket.getCreator().getId(),
                 ticket.getCreator().getEmail(),
                 ticket.getCreator().getName());
@@ -148,7 +154,7 @@ public class TicketService {
                 String.valueOf(ticket.getStatus()),
                 String.valueOf(ticket.getDepartment()),
                 ticket.getSubject(),
-                creator,
+                ticketCreator,
                 ticketMessageResponseDTOS
         );
     }
