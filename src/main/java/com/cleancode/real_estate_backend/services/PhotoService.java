@@ -1,8 +1,6 @@
 package com.cleancode.real_estate_backend.services;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,7 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class PhotoService {
@@ -32,14 +29,14 @@ public class PhotoService {
                 .collect(Collectors.toSet());
     }
 
-    public List<ByteArrayResource> getPhotos(Set<String> imageUrls) throws IOException {
+    public List<byte[]> getPhotos(Set<String> imageUrls) throws IOException {
         return imageUrls.stream().map(imageUrl -> {
             Path imagePath = Paths.get(imageUrl);
             if (!Files.exists(imagePath) || !Files.isRegularFile(imagePath)) {
                 throw new RuntimeException("Image file not found: " + imageUrl);
             }
             try {
-                return new ByteArrayResource(Files.readAllBytes(imagePath));
+                return Files.readAllBytes(imagePath);
             } catch (IOException e) {
                 throw new RuntimeException("Error reading file " + imageUrl, e);
             }

@@ -117,7 +117,7 @@ public class TicketService {
 
         ticketMessages.forEach(ticketMessage -> {
 
-            List<ByteArrayResource> photos;
+            List<byte[]> photos;
 
             try {
                 photos = photoService.getPhotos(ticketMessage.getImageUrls());
