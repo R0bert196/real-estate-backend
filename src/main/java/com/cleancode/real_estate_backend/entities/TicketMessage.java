@@ -2,10 +2,8 @@ package com.cleancode.real_estate_backend.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.apache.commons.lang3.RandomStringUtils;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,7 +32,7 @@ public class TicketMessage {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "app_user_id")
-    private AppUser appUser;
+    private AppUser creator;
 
     @ElementCollection
     private Set<String> imageUrls = new HashSet<>();

@@ -75,14 +75,19 @@ public class TicketService {
     @Transactional
     public TicketResponseDTOLite addTicket(TicketRequestDTO ticketRequestDTO) {
 
-        TicketMessage ticketMessage = TicketMessage.builder().message(ticketRequestDTO.message()).build();
+        AppUser creator = AppUser.builder().email("test@test.com").name("robbob").build();
+
+        TicketMessage ticketMessage = TicketMessage.builder()
+                .message(ticketRequestDTO.message())
+                .creator(creator)
+                .build();
 //        ticketMessage.setImageUrls(ticketRequestDTO.imageUrls());
 
         RentedFloor rentedFloor = rentedFloorRepository.findById(ticketRequestDTO.rentedFloorId()).orElseThrow(EntityNotFoundException::new);
 
 
         //TODO: replace with actual users
-        AppUser creator = AppUser.builder().email("test@test.com").name("robbob").build();
+
         AppUser manager = AppUser.builder().email("test2@test.com").name("managerRob").build();
 
         appUserRepository.save(creator);
@@ -126,9 +131,9 @@ public class TicketService {
             }
 
             AppUserResponseDTOLite messageCreator = new AppUserResponseDTOLite(
-                    ticketMessage.getAppUser().getId(),
-                    ticketMessage.getAppUser().getEmail(),
-                    ticketMessage.getAppUser().getName());
+                    ticketMessage.getCreator().getId(),
+                    ticketMessage.getCreator().getEmail(),
+                    ticketMessage.getCreator().getName());
 
             TicketMessageResponseDTO ticketMessageResponseDTO = new TicketMessageResponseDTO(
                     ticketMessage.getId(),
