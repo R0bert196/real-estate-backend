@@ -55,6 +55,10 @@ public class AppUser implements UserDetails {
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<Role> role = new HashSet<>();
 
+    @ManyToOne
+    @JoinColumn(name = "tenant_representant_id")
+    private Tenant tenantRepresentant;
+
 //    @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
 //    private Set<Ticket> createdTickets = new HashSet<>();
 //
