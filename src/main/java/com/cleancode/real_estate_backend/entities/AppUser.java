@@ -55,7 +55,7 @@ public class AppUser implements UserDetails {
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<Role> role = new HashSet<>();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_representant_id")
     private Tenant tenantRepresentant;
 
