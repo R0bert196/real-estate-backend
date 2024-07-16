@@ -5,6 +5,7 @@ import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketReques
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketMessageResponseDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTOLite;
+import com.cleancode.real_estate_backend.dtos.user.AppUserResponseDTOLite;
 import com.cleancode.real_estate_backend.entities.AppUser;
 import com.cleancode.real_estate_backend.entities.RentedFloor;
 import com.cleancode.real_estate_backend.entities.Ticket;
@@ -17,8 +18,6 @@ import com.cleancode.real_estate_backend.repositories.TicketRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -109,6 +108,7 @@ public class TicketService {
 
     public TicketResponseDTO getTicket(Long ticketId) {
 
+        //TODO left join fetch
         Ticket ticket = ticketRepository.findById(ticketId).orElseThrow(EntityNotFoundException::new);
 
         List<TicketMessage> ticketMessages = ticketMessageRepository.findAllWithImageUrlsByTicket_Id(ticket.getId());
@@ -136,6 +136,11 @@ public class TicketService {
 
         });
 
+        AppUserResponseDTOLite creator = new AppUserResponseDTOLite(
+                ticket.getCreator().getId(),
+                ticket.getCreator().getEmail(),
+                ticket.getCreator().getName());
+
 
         return new TicketResponseDTO(
                 ticket.getId(),
@@ -143,6 +148,7 @@ public class TicketService {
                 String.valueOf(ticket.getStatus()),
                 String.valueOf(ticket.getDepartment()),
                 ticket.getSubject(),
+                creator,
                 ticketMessageResponseDTOS
         );
     }

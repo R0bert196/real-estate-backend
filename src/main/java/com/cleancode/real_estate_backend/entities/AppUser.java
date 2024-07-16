@@ -55,6 +55,7 @@ public class AppUser implements UserDetails {
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<Role> role = new HashSet<>();
 
+    //TODO review, might change to @OneToMany on tenant
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_representant_id")
     private Tenant tenantRepresentant;
