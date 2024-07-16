@@ -32,7 +32,7 @@ public class AppUser implements UserDetails {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = false)
     private String email;
 
     @Column
@@ -54,6 +54,12 @@ public class AppUser implements UserDetails {
     @Enumerated(EnumType.STRING)
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<Role> role = new HashSet<>();
+
+//    @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private Set<Ticket> createdTickets = new HashSet<>();
+//
+//    @OneToMany(mappedBy = "responsibleManager", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private Set<Ticket> managedTickets = new HashSet<>();
 
 
     @Override

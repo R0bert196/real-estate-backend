@@ -32,18 +32,23 @@ public class Ticket {
 
     private String subject;
 
-    private String message;
-
     @ElementCollection
-    private Set<String> photoFileNames = new HashSet<>();
+    private Set<String> imageUrls = new HashSet<>();
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "creator_id", nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "creator_id")
     private AppUser creator;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "responsible_manager_id", nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "responsible_manager_id")
     private AppUser responsibleManager;
 
+//    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+//    @JoinColumn(name = "creator_id", nullable = true)
+//    private AppUser creator;
+//
+//    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+//    @JoinColumn(name = "responsible_manager_id", nullable = true, unique = true)
+//    private AppUser responsibleManager;
 
 }
