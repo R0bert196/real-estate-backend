@@ -24,6 +24,9 @@ spring:
     port: 587
     username: sabiuta123@gmail.com
     password: exmgfnnltckwokvh
+#  jackson:
+#    serialization:
+#      fail-on-empty-beans: false
 
 application:
   security:

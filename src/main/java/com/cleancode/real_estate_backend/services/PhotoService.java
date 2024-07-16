@@ -32,7 +32,7 @@ public class PhotoService {
                 .collect(Collectors.toSet());
     }
 
-    public List<Resource> getPhotos(Set<String> imageUrls) throws IOException {
+    public List<ByteArrayResource> getPhotos(Set<String> imageUrls) throws IOException {
         return imageUrls.stream().map(imageUrl -> {
             Path imagePath = Paths.get(imageUrl);
             if (!Files.exists(imagePath) || !Files.isRegularFile(imagePath)) {

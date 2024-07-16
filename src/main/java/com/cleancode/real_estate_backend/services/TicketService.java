@@ -17,6 +17,7 @@ import com.cleancode.real_estate_backend.repositories.TicketRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
@@ -110,13 +111,13 @@ public class TicketService {
 
         Ticket ticket = ticketRepository.findById(ticketId).orElseThrow(EntityNotFoundException::new);
 
-        List<TicketMessage> ticketMessages = ticketMessageRepository.findAllByTicket_Id(ticket.getId());
+        List<TicketMessage> ticketMessages = ticketMessageRepository.findAllWithImageUrlsByTicket_Id(ticket.getId());
 
         List<TicketMessageResponseDTO> ticketMessageResponseDTOS = new ArrayList<>();
 
         ticketMessages.forEach(ticketMessage -> {
 
-            List<Resource> photos;
+            List<ByteArrayResource> photos;
 
             try {
                 photos = photoService.getPhotos(ticketMessage.getImageUrls());
@@ -149,5 +150,6 @@ public class TicketService {
     public void addPhotosUrlsToMessage(Long ticketMessageId, Set<String> imageUrls) {
         TicketMessage ticketMessage = ticketMessageRepository.findById(ticketMessageId).orElseThrow(EntityNotFoundException::new);
         ticketMessage.setImageUrls(imageUrls);
+        ticketMessageRepository.save(ticketMessage);
     }
 }
