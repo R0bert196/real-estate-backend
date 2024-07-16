@@ -92,7 +92,7 @@ public class AdministratorController {
     @GetMapping("/ticket")
     public ResponseEntity<?> getTickets() {
 
-        List<TicketResponseDTOView> ticketResponseDTOViews = ticketService.getTicketsView();
+        List<TicketResponseDTOView> ticketResponseDTOViews = ticketService.getTicketsViewAdministrator(1L);
         return ResponseEntity.ok(ticketResponseDTOViews);
     }
 }

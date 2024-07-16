@@ -1,6 +1,7 @@
 package com.cleancode.real_estate_backend.controllers;
 
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.RentedFloorResponseDTO;
+import com.cleancode.real_estate_backend.dtos.administrator.ticket.response.TicketResponseDTOView;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTOLite;
 import com.cleancode.real_estate_backend.enums.ticket.TicketSeverity;
@@ -37,6 +38,13 @@ public class TenantController {
         //todo get rented floors by tenant id
         List<RentedFloorResponseDTO> rentedFloors =  rentedFloorService.getRentedFloors();
         return ResponseEntity.ok(rentedFloors);
+    }
+
+    @GetMapping("/ticket")
+    public ResponseEntity<?> getTickets() {
+
+        List<TicketResponseDTOView> ticketResponseDTOViews = ticketService.getTicketsViewTenant(1L);
+        return ResponseEntity.ok(ticketResponseDTOViews);
     }
 
     @PostMapping(path = "/ticket",  consumes = "multipart/form-data")

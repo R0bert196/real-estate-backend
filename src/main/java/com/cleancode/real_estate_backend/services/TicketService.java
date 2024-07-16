@@ -7,7 +7,6 @@ import com.cleancode.real_estate_backend.entities.AppUser;
 import com.cleancode.real_estate_backend.entities.Ticket;
 import com.cleancode.real_estate_backend.entities.TicketMessage;
 import com.cleancode.real_estate_backend.enums.ticket.TicketSeverity;
-import com.cleancode.real_estate_backend.enums.ticket.TicketStatus;
 import com.cleancode.real_estate_backend.repositories.AppUserRepository;
 import com.cleancode.real_estate_backend.repositories.TicketMessageRepository;
 import com.cleancode.real_estate_backend.repositories.TicketRepository;
@@ -25,7 +24,11 @@ public class TicketService {
     private final AppUserRepository appUserRepository;
     private final TicketMessageRepository ticketMessageRepository;
 
-    public List<TicketResponseDTOView> getTicketsView() {
+    public List<TicketResponseDTOView> getTicketsViewAdministrator(Long administratorId) {
+        return ticketRepository.findAllWithCreator().stream().map(this::convertToDTOView).toList();
+    }
+
+    public List<TicketResponseDTOView> getTicketsViewTenant(Long tenantId) {
         return ticketRepository.findAllWithCreator().stream().map(this::convertToDTOView).toList();
     }
 
@@ -34,11 +37,11 @@ public class TicketService {
         return new TicketResponseDTOView(
                 ticket.getId(),
                 ticket.getSubject(),
-                ticket.getSeverity().toString(),
-                ticket.getStatus().toString(),
+                String.valueOf(ticket.getSeverity()),
+                String.valueOf(ticket.getStatus()),
                 ticket.getCreator().getId(),
                 ticket.getCreator().getUsername(),
-                ticket.getDepartment().toString()
+                String.valueOf(ticket.getDepartment())
         );
     }
 
