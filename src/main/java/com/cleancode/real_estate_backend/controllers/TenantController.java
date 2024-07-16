@@ -3,6 +3,7 @@ package com.cleancode.real_estate_backend.controllers;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.RentedFloorResponseDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.ticket.response.TicketResponseDTOView;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketRequestDTO;
+import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTOLite;
 import com.cleancode.real_estate_backend.enums.ticket.TicketSeverity;
 import com.cleancode.real_estate_backend.services.PhotoService;
@@ -47,28 +48,38 @@ public class TenantController {
         return ResponseEntity.ok(ticketResponseDTOViews);
     }
 
+    @GetMapping("/ticket/{ticketId}")
+    public ResponseEntity<?> getTicket(@PathVariable(value = "ticketId") Long ticketId) {
+
+        TicketResponseDTO dto = ticketService.getTicket(ticketId);
+        return ResponseEntity.ok(dto);
+    }
     @PostMapping(path = "/ticket",  consumes = "multipart/form-data")
     public ResponseEntity<TicketResponseDTOLite> createTicket(
             @RequestParam("subject") String subject,
             @RequestParam("message") String message,
             @RequestParam("severity") String severity,
+            @RequestParam("rentedFloorId") Long rentedFloorId,
             @RequestParam("images") MultipartFile[] images) {
 
-        // Replace these with actual IDs
+        // Replace these with actual ID
         Long creatorId = 1L;
-        Long ticketId = 1L;
 
-        Set<String> imageUrls = null;
+        TicketRequestDTO ticketRequestDTO = new TicketRequestDTO(subject, message, severity, rentedFloorId);
+
+        TicketResponseDTOLite ticketResponse = ticketService.addTicket(ticketRequestDTO);
+
         try {
-            imageUrls = photoService.savePhotos(creatorId, ticketId, images);
+
+            // save the images to the disk
+            Set<String> imageUrls = photoService.savePhotos(creatorId, ticketResponse.ticketMessageId(), images);
+
+            // save the path to the image into the ticket message
+            ticketService.addPhotosUrlsToMessage(ticketResponse.ticketMessageId(), imageUrls);
         } catch (IOException e) {
             log.error(e.toString());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        TicketRequestDTO ticketRequestDTO = new TicketRequestDTO(subject, message, severity, imageUrls);
-
-        TicketResponseDTOLite ticketResponse = ticketService.addTicket(ticketRequestDTO);
         return new ResponseEntity<>(ticketResponse, HttpStatus.CREATED);
     }
 }

@@ -32,9 +32,6 @@ public class Ticket {
 
     private String subject;
 
-    @ElementCollection
-    private Set<String> imageUrls = new HashSet<>();
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id")
     private AppUser creator;
@@ -42,6 +39,10 @@ public class Ticket {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "responsible_manager_id")
     private AppUser responsibleManager;
+
+    @ManyToOne
+    @JoinColumn(name = "rented_floor_id")
+    private RentedFloor rentedFloor;
 
 //    @ManyToOne(optional = false, fetch = FetchType.LAZY)
 //    @JoinColumn(name = "creator_id", nullable = true)

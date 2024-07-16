@@ -2,19 +2,28 @@ package com.cleancode.real_estate_backend.services;
 
 import com.cleancode.real_estate_backend.dtos.administrator.ticket.response.TicketResponseDTOView;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketRequestDTO;
+import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketMessageResponseDTO;
+import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTOLite;
 import com.cleancode.real_estate_backend.entities.AppUser;
+import com.cleancode.real_estate_backend.entities.RentedFloor;
 import com.cleancode.real_estate_backend.entities.Ticket;
 import com.cleancode.real_estate_backend.entities.TicketMessage;
 import com.cleancode.real_estate_backend.enums.ticket.TicketSeverity;
 import com.cleancode.real_estate_backend.repositories.AppUserRepository;
+import com.cleancode.real_estate_backend.repositories.RentedFloorRepository;
 import com.cleancode.real_estate_backend.repositories.TicketMessageRepository;
 import com.cleancode.real_estate_backend.repositories.TicketRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +32,8 @@ public class TicketService {
     private final TicketRepository ticketRepository;
     private final AppUserRepository appUserRepository;
     private final TicketMessageRepository ticketMessageRepository;
+    private final RentedFloorRepository rentedFloorRepository;
+    private final PhotoService photoService;
 
     public List<TicketResponseDTOView> getTicketsViewAdministrator(Long administratorId) {
         return ticketRepository.findAllWithCreator().stream().map(this::convertToDTOView).toList();
@@ -65,6 +76,9 @@ public class TicketService {
     public TicketResponseDTOLite addTicket(TicketRequestDTO ticketRequestDTO) {
 
         TicketMessage ticketMessage = TicketMessage.builder().message(ticketRequestDTO.message()).build();
+//        ticketMessage.setImageUrls(ticketRequestDTO.imageUrls());
+
+        RentedFloor rentedFloor = rentedFloorRepository.findById(ticketRequestDTO.rentedFloorId()).orElseThrow(EntityNotFoundException::new);
 
 
         //TODO: replace with actual users
@@ -77,7 +91,7 @@ public class TicketService {
         Ticket ticket = new Ticket();
         ticket.setSubject(ticketRequestDTO.subject());
         ticket.setSeverity(TicketSeverity.valueOf(ticketRequestDTO.severity()));
-        ticket.setImageUrls(ticketRequestDTO.imageUrls());
+        ticket.setRentedFloor(rentedFloor);
 
         //TODO: replace with actual users
         ticket.setCreator(creator);
@@ -87,8 +101,53 @@ public class TicketService {
 
         ticketMessage.setTicket(savedTicket);
 
-        ticketMessageRepository.save(ticketMessage);
+        TicketMessage savedTicketMessage = ticketMessageRepository.save(ticketMessage);
 
-        return new TicketResponseDTOLite(ticket.getId(), ticket.getSubject());
+        return new TicketResponseDTOLite(savedTicket.getId(), savedTicketMessage.getId(), ticket.getSubject());
+    }
+
+    public TicketResponseDTO getTicket(Long ticketId) {
+
+        Ticket ticket = ticketRepository.findById(ticketId).orElseThrow(EntityNotFoundException::new);
+
+        List<TicketMessage> ticketMessages = ticketMessageRepository.findAllByTicket_Id(ticket.getId());
+
+        List<TicketMessageResponseDTO> ticketMessageResponseDTOS = new ArrayList<>();
+
+        ticketMessages.forEach(ticketMessage -> {
+
+            List<Resource> photos;
+
+            try {
+                photos = photoService.getPhotos(ticketMessage.getImageUrls());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            TicketMessageResponseDTO ticketMessageResponseDTO = new TicketMessageResponseDTO(
+                    ticketMessage.getId(),
+                    ticketMessage.getMessage(),
+                    ticketMessage.getCreateTs(),
+                    photos
+            );
+
+            ticketMessageResponseDTOS.add(ticketMessageResponseDTO);
+
+        });
+
+
+        return new TicketResponseDTO(
+                ticket.getId(),
+                String.valueOf(ticket.getSeverity()),
+                String.valueOf(ticket.getStatus()),
+                String.valueOf(ticket.getDepartment()),
+                ticket.getSubject(),
+                ticketMessageResponseDTOS
+        );
+    }
+
+    public void addPhotosUrlsToMessage(Long ticketMessageId, Set<String> imageUrls) {
+        TicketMessage ticketMessage = ticketMessageRepository.findById(ticketMessageId).orElseThrow(EntityNotFoundException::new);
+        ticketMessage.setImageUrls(imageUrls);
     }
 }

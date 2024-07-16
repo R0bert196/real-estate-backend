@@ -35,4 +35,4 @@ application:
 
 photo:
   upload:
-    dir: /tmp/real-estate/photos
+    dir: /tmp/real-estate/images

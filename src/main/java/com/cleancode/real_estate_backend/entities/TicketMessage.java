@@ -28,13 +28,16 @@ public class TicketMessage {
     @Temporal(TemporalType.TIMESTAMP)
     private Long createTs;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ticket_id")
     private Ticket ticket;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "app_user_id")
     private AppUser appUser;
+
+    @ElementCollection
+    private Set<String> imageUrls = new HashSet<>();
 
     @PrePersist
     private void prePersist() {

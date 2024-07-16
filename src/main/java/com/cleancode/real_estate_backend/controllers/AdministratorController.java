@@ -6,6 +6,7 @@ import com.cleancode.real_estate_backend.dtos.administrator.tenants.request.Tena
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTOLite;
 import com.cleancode.real_estate_backend.dtos.administrator.ticket.response.TicketResponseDTOView;
+import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTO;
 import com.cleancode.real_estate_backend.services.BuildingService;
 import com.cleancode.real_estate_backend.services.TenantService;
 import com.cleancode.real_estate_backend.services.TicketService;
@@ -94,5 +95,12 @@ public class AdministratorController {
 
         List<TicketResponseDTOView> ticketResponseDTOViews = ticketService.getTicketsViewAdministrator(1L);
         return ResponseEntity.ok(ticketResponseDTOViews);
+    }
+
+    @GetMapping("/ticket/{ticketId}")
+    public ResponseEntity<?> getTicket(@PathVariable(value = "ticketId") Long ticketId) {
+
+        TicketResponseDTO dto = ticketService.getTicket(ticketId);
+        return ResponseEntity.ok(dto);
     }
 }
