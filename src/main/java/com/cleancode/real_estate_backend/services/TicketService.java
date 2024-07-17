@@ -1,6 +1,7 @@
 package com.cleancode.real_estate_backend.services;
 
 import com.cleancode.real_estate_backend.dtos.administrator.ticket.response.TicketResponseDTOView;
+import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketMessageRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketMessageResponseDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTO;
@@ -172,5 +173,26 @@ public class TicketService {
         TicketMessage ticketMessage = ticketMessageRepository.findById(ticketMessageId).orElseThrow(EntityNotFoundException::new);
         ticketMessage.setImageUrls(imageUrls);
         ticketMessageRepository.save(ticketMessage);
+    }
+
+
+    public TicketResponseDTOLite addMessageToTicket(Long ticketId, TicketMessageRequestDTO requestDTO) {
+
+        //todo replace with actual creator
+        AppUser creator = AppUser.builder().email("test@test.com").name("messagerRob").build();
+
+        appUserRepository.save(creator);
+
+        Ticket ticket = ticketRepository.findById(ticketId).orElseThrow(EntityNotFoundException::new);
+
+        TicketMessage ticketMessage = TicketMessage.builder()
+                .creator(creator)
+                .message(requestDTO.message())
+                .ticket(ticket)
+                .build();
+
+        TicketMessage savedMessage = ticketMessageRepository.save(ticketMessage);
+
+        return new TicketResponseDTOLite(ticket.getId(), savedMessage.getId(), ticket.getSubject());
     }
 }
