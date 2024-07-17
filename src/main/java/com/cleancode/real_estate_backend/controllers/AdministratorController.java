@@ -6,16 +6,23 @@ import com.cleancode.real_estate_backend.dtos.administrator.tenants.request.Tena
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTOLite;
 import com.cleancode.real_estate_backend.dtos.administrator.ticket.response.TicketResponseDTOView;
+import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketMessageRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTO;
+import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTOLite;
 import com.cleancode.real_estate_backend.services.BuildingService;
+import com.cleancode.real_estate_backend.services.PhotoService;
 import com.cleancode.real_estate_backend.services.TenantService;
 import com.cleancode.real_estate_backend.services.TicketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @Slf4j
@@ -26,6 +33,7 @@ public class AdministratorController {
     private final BuildingService buildingService;
     private final TenantService tenantService;
     private final TicketService ticketService;
+    private final PhotoService photoService;
 
 
     @GetMapping("/building")
@@ -102,5 +110,45 @@ public class AdministratorController {
 
         TicketResponseDTO dto = ticketService.getTicket(ticketId);
         return ResponseEntity.ok(dto);
+    }
+
+
+    //TODO: refactor, same code on tenant controller
+    @PostMapping("/ticket/{ticketId}/message")
+    public ResponseEntity<?> addMessageToTicket(
+            @PathVariable(value = "ticketId") Long ticketId,
+            @RequestParam("message") String message,
+            @RequestParam(value = "images", required = false) MultipartFile[] images
+    ) {
+
+        TicketMessageRequestDTO requestDTO = new TicketMessageRequestDTO(message);
+
+        TicketResponseDTOLite ticketDto = ticketService.addMessageToTicket(ticketId, requestDTO);
+
+        //TODO replace with actual user
+        Long creatorId = 1L;
+
+        if (saveImages(images, ticketDto, creatorId)) return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    //TODO: refactor, same code on tenant controller
+    private boolean saveImages(@RequestParam(value = "images", required = false) MultipartFile[] images, TicketResponseDTOLite ticketDto, Long creatorId) {
+        if (images == null) {
+            return false;
+        }
+
+        try {
+
+            // save the images to the disk
+            Set<String> imageUrls = photoService.savePhotos(creatorId, ticketDto.ticketMessageId(), images);
+
+            // save the path to the image into the ticket message
+            ticketService.addPhotosUrlsToMessage(ticketDto.ticketMessageId(), imageUrls);
+        } catch (IOException e) {
+            log.error(e.toString());
+            return true;
+        }
+        return false;
     }
 }

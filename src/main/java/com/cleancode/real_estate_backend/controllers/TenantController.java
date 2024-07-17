@@ -76,6 +76,8 @@ public class TenantController {
         return new ResponseEntity<>(ticketDto, HttpStatus.CREATED);
     }
 
+
+    //TODO: refactor, same code on administrator controller
     @PostMapping("/ticket/{ticketId}/message")
     public ResponseEntity<?> addMessageToTicket(
             @PathVariable(value = "ticketId") Long ticketId,
@@ -94,6 +96,7 @@ public class TenantController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    //TODO: refactor, same code on administrator controller
     private boolean saveImages(@RequestParam(value = "images", required = false) MultipartFile[] images, TicketResponseDTOLite ticketDto, Long creatorId) {
         if (images == null) {
             return false;
