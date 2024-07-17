@@ -6,6 +6,7 @@ public record TicketRequestDTO(
         String subject,
         String message,
         String severity,
+        String department,
         Long rentedFloorId
 ) {
 }

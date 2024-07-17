@@ -59,13 +59,14 @@ public class TenantController {
             @RequestParam("subject") String subject,
             @RequestParam("message") String message,
             @RequestParam("severity") String severity,
+            @RequestParam("department") String department,
             @RequestParam("rentedFloorId") Long rentedFloorId,
             @RequestParam("images") MultipartFile[] images) {
 
         // Replace these with actual ID
         Long creatorId = 1L;
 
-        TicketRequestDTO ticketRequestDTO = new TicketRequestDTO(subject, message, severity, rentedFloorId);
+        TicketRequestDTO ticketRequestDTO = new TicketRequestDTO(subject, message, severity, department, rentedFloorId);
 
         TicketResponseDTOLite ticketResponse = ticketService.addTicket(ticketRequestDTO);
 

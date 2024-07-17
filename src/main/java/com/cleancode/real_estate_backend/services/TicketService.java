@@ -10,7 +10,9 @@ import com.cleancode.real_estate_backend.entities.AppUser;
 import com.cleancode.real_estate_backend.entities.RentedFloor;
 import com.cleancode.real_estate_backend.entities.Ticket;
 import com.cleancode.real_estate_backend.entities.TicketMessage;
+import com.cleancode.real_estate_backend.enums.ticket.TicketDepartment;
 import com.cleancode.real_estate_backend.enums.ticket.TicketSeverity;
+import com.cleancode.real_estate_backend.enums.ticket.TicketStatus;
 import com.cleancode.real_estate_backend.repositories.AppUserRepository;
 import com.cleancode.real_estate_backend.repositories.RentedFloorRepository;
 import com.cleancode.real_estate_backend.repositories.TicketMessageRepository;
@@ -97,6 +99,8 @@ public class TicketService {
         ticket.setSubject(ticketRequestDTO.subject());
         ticket.setSeverity(TicketSeverity.valueOf(ticketRequestDTO.severity()));
         ticket.setRentedFloor(rentedFloor);
+        ticket.setStatus(TicketStatus.PENDING);
+        ticket.setDepartment(TicketDepartment.valueOf(ticketRequestDTO.department()));
 
         //TODO: replace with actual users
         ticket.setCreator(creator);
