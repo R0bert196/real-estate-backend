@@ -3,6 +3,7 @@ package com.cleancode.real_estate_backend.services;
 import com.cleancode.real_estate_backend.dtos.administrator.ticket.response.TicketResponseDTOView;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketMessageRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketRequestDTO;
+import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketUpdateRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketMessageResponseDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTOLite;
@@ -194,5 +195,25 @@ public class TicketService {
         TicketMessage savedMessage = ticketMessageRepository.save(ticketMessage);
 
         return new TicketResponseDTOLite(ticket.getId(), savedMessage.getId(), ticket.getSubject());
+    }
+
+    public void updateTicket(Long ticketId, TicketUpdateRequestDTO ticketRequestDTO) {
+
+        Ticket foundTicket = ticketRepository.findById(ticketId).orElseThrow(EntityNotFoundException::new);
+
+        if (ticketRequestDTO.department() !=null) {
+
+            foundTicket.setDepartment(TicketDepartment.valueOf(ticketRequestDTO.department()));
+        }
+        if (ticketRequestDTO.severity() !=null) {
+
+            foundTicket.setSeverity(TicketSeverity.valueOf(ticketRequestDTO.severity()));
+        }
+        if (ticketRequestDTO.status() !=null) {
+
+            foundTicket.setStatus(TicketStatus.valueOf(ticketRequestDTO.status()));
+        }
+
+        ticketRepository.save(foundTicket);
     }
 }

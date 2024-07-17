@@ -7,6 +7,8 @@ import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.Ten
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTOLite;
 import com.cleancode.real_estate_backend.dtos.administrator.ticket.response.TicketResponseDTOView;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketMessageRequestDTO;
+import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketRequestDTO;
+import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketUpdateRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTOLite;
 import com.cleancode.real_estate_backend.services.BuildingService;
@@ -150,5 +152,14 @@ public class AdministratorController {
             return true;
         }
         return false;
+    }
+
+    @PutMapping("/ticket/{ticketId}")
+    public ResponseEntity<?> updateTicket(
+            @PathVariable(value = "ticketId") Long ticketId,
+            @RequestBody TicketUpdateRequestDTO ticketUpdateRequestDTO) {
+
+        ticketService.updateTicket(ticketId, ticketUpdateRequestDTO);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 }
