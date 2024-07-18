@@ -119,8 +119,7 @@ public class TicketService {
 
     public TicketResponseDTO getTicket(Long ticketId) {
 
-        //TODO left join fetch
-        Ticket ticket = ticketRepository.findById(ticketId).orElseThrow(EntityNotFoundException::new);
+        Ticket ticket = ticketRepository.findWithCreatorById(ticketId).orElseThrow(EntityNotFoundException::new);
 
         List<TicketMessage> ticketMessages = ticketMessageRepository.findAllWithImageUrlsByTicket_Id(ticket.getId());
 
