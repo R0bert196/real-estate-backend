@@ -1,6 +1,7 @@
 package com.cleancode.real_estate_backend.controllers;
 
-import com.cleancode.real_estate_backend.dtos.administrator.building.request.BuildingRequestDTO;
+import
+        com.cleancode.real_estate_backend.dtos.administrator.building.request.BuildingRequestDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.building.response.BuildingResponseDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.request.TenantRequestDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTO;
@@ -107,6 +108,27 @@ public class AdministratorController {
         return ResponseEntity.ok(ticketResponseDTOViews);
     }
 
+    @PostMapping("/ticket")
+    public ResponseEntity<?> addTicket(
+            @RequestParam("subject") String subject,
+            @RequestParam("message") String message,
+            @RequestParam("severity") String severity,
+            @RequestParam("department") String department,
+            @RequestParam("rentedFloorId") Long rentedFloorId,
+            @RequestParam(value = "images", required = false) MultipartFile[] images) {
+
+        //TODO replace with actual user
+        Long creatorId = 1L;
+
+        TicketRequestDTO ticketRequestDTO = new TicketRequestDTO(subject, message, severity, department, rentedFloorId);
+
+        TicketResponseDTOLite ticketDto = ticketService.addTicket(ticketRequestDTO);
+
+        if (saveImages(images, ticketDto, creatorId)) return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(ticketDto, HttpStatus.CREATED);
+
+    }
+
     @GetMapping("/ticket/{ticketId}")
     public ResponseEntity<?> getTicket(@PathVariable(value = "ticketId") Long ticketId) {
 
@@ -162,4 +184,6 @@ public class AdministratorController {
         ticketService.updateTicket(ticketId, ticketUpdateRequestDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
+
+
 }
