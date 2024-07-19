@@ -1,18 +1,20 @@
 package com.cleancode.real_estate_backend.security.services;
 
+import com.cleancode.real_estate_backend.dtos.TestRequest;
 import com.cleancode.real_estate_backend.dtos.auth.*;
+import com.cleancode.real_estate_backend.dtos.kafka.EmailDTO;
+import com.cleancode.real_estate_backend.dtos.kafka.KafkaMessage;
 import com.cleancode.real_estate_backend.entities.AppUser;
 import com.cleancode.real_estate_backend.enums.Role;
 import com.cleancode.real_estate_backend.repositories.AppUserRepository;
-import com.cleancode.real_estate_backend.services.EmailSenderService;
 import io.jsonwebtoken.ExpiredJwtException;
-import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpHeaders;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,7 +22,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.io.UnsupportedEncodingException;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -32,7 +34,8 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    private final EmailSenderService emailSenderService;
+
+    private final KafkaTemplate<String, KafkaMessage> kafkaTemplate;
 
     public void register(RegisterRequest request, HttpServletRequest httpServletRequest, Role role) {
 
@@ -90,11 +93,11 @@ public class AuthenticationService {
 
 
     public AuthenticationResponse refreshToken(
-            HttpServletRequest request)  {
+            HttpServletRequest request) {
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String refreshToken;
         final String userEmail;
-        if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return null;
         }
         refreshToken = authHeader.substring(7);
@@ -160,17 +163,15 @@ public class AuthenticationService {
         content = content.replace("[[CODE]]", code);
         content = content.replace("[[URL]]", verifyURL);
 
-        try {
-            emailSenderService.sendEmailWithContent(user, "Verify your account", content);
-        } catch (MessagingException | UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        KafkaMessage dto = new EmailDTO(user.getEmail(), "Verify your account", content);
+
+        kafkaTemplate.send("mail", dto);
     }
 
 
     public void sendResetPasswordEmail(EmailRequest emailRequest, HttpServletRequest request) {
 
-        AppUser user  = repository.findByEmail(emailRequest.getEmail()).orElseThrow(EntityExistsException::new);
+        AppUser user = repository.findByEmail(emailRequest.getEmail()).orElseThrow(EntityExistsException::new);
         user.setVerificationCode(RandomStringUtils.random(64, true, true));
         AppUser savedUser = repository.save(user);
 
@@ -186,11 +187,9 @@ public class AuthenticationService {
         content = content.replace("[[name]]", savedUser.getName());
         content = content.replace("[[URL]]", url);
 
-        try {
-            emailSenderService.sendEmailWithContent(user, "Reset your password", content);
-        } catch (MessagingException | UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        KafkaMessage dto = new EmailDTO(user.getEmail(), "Verify your account", content);
+
+        kafkaTemplate.send("mail", dto);
     }
 
     public void resetPassword(ResetPasswordRequest request) {

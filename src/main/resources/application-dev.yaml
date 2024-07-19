@@ -12,18 +12,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-  mail:
-    protocol: smtp
-    properties:
-      mail:
-        smtp:
-          starttls:
-            enable: true
-            required: true
-    host: smtp.gmail.com
-    port: 587
-    username: sabiuta123@gmail.com
-    password: exmgfnnltckwokvh
 
   kafka:
     bootstrap-servers: localhost:9092
