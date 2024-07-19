@@ -25,6 +25,9 @@ spring:
     username: sabiuta123@gmail.com
     password: exmgfnnltckwokvh
 
+  kafka:
+    bootstrap-servers: localhost:9092
+
 application:
   security:
     jwt:
