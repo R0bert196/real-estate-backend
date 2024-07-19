@@ -1,5 +1,6 @@
 package com.cleancode.real_estate_backend.config;
 
+import com.cleancode.real_estate_backend.dtos.kafka.KafkaMessage;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,19 +24,18 @@ public class KafkaProducerConfig {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializerKafka.class);
 
         return props;
     }
 
     @Bean
-    public ProducerFactory<String, String> producerFactoryString() {
+    public ProducerFactory<String, KafkaMessage> producerFactoryKafkaMessage() {
         return new DefaultKafkaProducerFactory<>(producerConfig());
     }
 
     @Bean
-    public KafkaTemplate<String, String> kafkaTemplateString(ProducerFactory<String, String> producerFactoryString) {
-        return new KafkaTemplate<>(producerFactoryString);
+    public KafkaTemplate<String, KafkaMessage> kafkaTemplateKafkaMessage(ProducerFactory<String, KafkaMessage> producerFactoryKafkaMessage) {
+        return new KafkaTemplate<>(producerFactoryKafkaMessage);
     }
-
 }
