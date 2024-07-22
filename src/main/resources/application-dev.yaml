@@ -2,7 +2,7 @@ spring:
   application:
     name: real_estate_backend
   datasource:
-    url: jdbc:postgresql://localhost:5432/cleancode
+    url: jdbc:postgresql://localhost:5000/cleancode
     username: cleancode
     password: cleancode
   jpa:
