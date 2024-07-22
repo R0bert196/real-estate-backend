@@ -12,6 +12,9 @@ import com.cleancode.real_estate_backend.services.TenantService;
 import com.cleancode.real_estate_backend.services.TicketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -91,10 +94,14 @@ public class AdministratorController {
     }
 
     @GetMapping("/ticket")
-    public ResponseEntity<?> getTickets() {
-
-        List<TicketResponseDTOView> ticketResponseDTOViews = ticketService.getTicketsViewAdministrator(1L);
-        return ResponseEntity.ok(ticketResponseDTOViews);
+    public ResponseEntity<?> getTickets(
+            @RequestParam (name = "pageNumber", required = true) Integer pageNumber,
+            @RequestParam (name = "numberOfItems", required = true) Integer numberOfItems
+    ) {
+        System.out.println(pageNumber + " " + numberOfItems);
+            Pageable pageable = PageRequest.of(pageNumber, numberOfItems);
+            List<TicketResponseDTOView> ticketResponseDTOViews = ticketService.getTicketsViewAdministrator(1L, pageable);
+            return ResponseEntity.ok(ticketResponseDTOViews);
     }
 
     @GetMapping("/ticket/{ticketId}")
@@ -102,5 +109,10 @@ public class AdministratorController {
 
         TicketResponseDTO dto = ticketService.getTicket(ticketId);
         return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/ticket/count")
+    public ResponseEntity<?> countTickets(){
+        return ResponseEntity.ok(ticketService.countTickets()) ;
     }
 }

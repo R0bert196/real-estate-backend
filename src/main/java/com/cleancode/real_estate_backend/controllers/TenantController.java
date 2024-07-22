@@ -12,6 +12,8 @@ import com.cleancode.real_estate_backend.services.TenantService;
 import com.cleancode.real_estate_backend.services.TicketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,9 +44,12 @@ public class TenantController {
     }
 
     @GetMapping("/ticket")
-    public ResponseEntity<?> getTickets() {
-
-        List<TicketResponseDTOView> ticketResponseDTOViews = ticketService.getTicketsViewTenant(1L);
+    public ResponseEntity<?> getTickets(
+            @RequestParam (name = "pageNumber", required = true) Integer pageNumber,
+            @RequestParam (name = "numberOfItems", required = true) Integer numberOfItems
+    ) {
+        Pageable pageable= PageRequest.of(pageNumber, numberOfItems);
+        List<TicketResponseDTOView> ticketResponseDTOViews = ticketService.getTicketsViewTenant(1L, pageable);
         return ResponseEntity.ok(ticketResponseDTOViews);
     }
 
@@ -54,32 +59,40 @@ public class TenantController {
         TicketResponseDTO dto = ticketService.getTicket(ticketId);
         return ResponseEntity.ok(dto);
     }
+
+    @GetMapping("/ticket/count")
+    public ResponseEntity<?> countTickets(){
+        return ResponseEntity.ok(ticketService.countTickets()) ;
+    }
+
+    //severity : TicketSeverity
+    //rentedFloorId : foreignKey
     @PostMapping(path = "/ticket",  consumes = "multipart/form-data")
     public ResponseEntity<TicketResponseDTOLite> createTicket(
             @RequestParam("subject") String subject,
             @RequestParam("message") String message,
             @RequestParam("severity") String severity,
             @RequestParam("rentedFloorId") Long rentedFloorId,
-            @RequestParam("images") MultipartFile[] images) {
+            @RequestParam(name = "images", required = false) MultipartFile[] images) {
 
         // Replace these with actual ID
-        Long creatorId = 1L;
+        Long creatorId = 2L;
 
         TicketRequestDTO ticketRequestDTO = new TicketRequestDTO(subject, message, severity, rentedFloorId);
 
         TicketResponseDTOLite ticketResponse = ticketService.addTicket(ticketRequestDTO);
-
-        try {
-
-            // save the images to the disk
-            Set<String> imageUrls = photoService.savePhotos(creatorId, ticketResponse.ticketMessageId(), images);
-
-            // save the path to the image into the ticket message
-            ticketService.addPhotosUrlsToMessage(ticketResponse.ticketMessageId(), imageUrls);
-        } catch (IOException e) {
-            log.error(e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+//
+//        try {
+//
+//            // save the images to the disk
+//            Set<String> imageUrls = photoService.savePhotos(creatorId, ticketResponse.ticketMessageId(), images);
+//
+//            // save the path to the image into the ticket message
+//            ticketService.addPhotosUrlsToMessage(ticketResponse.ticketMessageId(), imageUrls);
+//        } catch (IOException e) {
+//            log.error(e.toString());
+//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
         return new ResponseEntity<>(ticketResponse, HttpStatus.CREATED);
     }
 }
