@@ -81,18 +81,18 @@ public class TenantController {
         TicketRequestDTO ticketRequestDTO = new TicketRequestDTO(subject, message, severity, rentedFloorId);
 
         TicketResponseDTOLite ticketResponse = ticketService.addTicket(ticketRequestDTO);
-//
-//        try {
-//
-//            // save the images to the disk
-//            Set<String> imageUrls = photoService.savePhotos(creatorId, ticketResponse.ticketMessageId(), images);
-//
-//            // save the path to the image into the ticket message
-//            ticketService.addPhotosUrlsToMessage(ticketResponse.ticketMessageId(), imageUrls);
-//        } catch (IOException e) {
-//            log.error(e.toString());
-//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
+
+        try {
+
+            // save the images to the disk
+            Set<String> imageUrls = photoService.savePhotos(creatorId, ticketResponse.ticketMessageId(), images);
+
+            // save the path to the image into the ticket message
+            ticketService.addPhotosUrlsToMessage(ticketResponse.ticketMessageId(), imageUrls);
+        } catch (IOException e) {
+            log.error(e.toString());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
         return new ResponseEntity<>(ticketResponse, HttpStatus.CREATED);
     }
 }
