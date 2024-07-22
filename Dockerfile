@@ -13,6 +13,10 @@ RUN mvn clean package -DskipTests=true
 
 # Stage 2: Create the final image
 FROM openjdk:17-jdk-slim as prod
+
+#Set required env variables
+ENV SPRING_PROFILES_ACTIVE=production
+
 RUN mkdir /app
 
 # Create a directory for the images uploads and set as a volume
