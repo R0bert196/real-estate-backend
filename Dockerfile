@@ -19,9 +19,9 @@ ENV SPRING_PROFILES_ACTIVE=production
 
 RUN mkdir /app
 
-# Create a directory for the images uploads and set as a volume
-RUN mkdir /app/uploads
-VOLUME /app/uploads
+## Create a directory for the images uploads and set as a volume
+#RUN mkdir /app/uploads
+#VOLUME /app/uploads
 
 # Copy the built JAR from the previous stage
 COPY --from=builder /app/target/*.jar /app/app.jar
