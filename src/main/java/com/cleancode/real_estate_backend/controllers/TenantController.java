@@ -2,6 +2,7 @@ package com.cleancode.real_estate_backend.controllers;
 
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.RentedFloorResponseDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.ticket.response.TicketResponseDTOView;
+import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketMessageRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTOLite;
@@ -39,7 +40,7 @@ public class TenantController {
     public ResponseEntity<?> getRentedFloors() {
 
         //todo get rented floors by tenant id
-        List<RentedFloorResponseDTO> rentedFloors =  rentedFloorService.getRentedFloors();
+        List<RentedFloorResponseDTO> rentedFloors = rentedFloorService.getRentedFloors();
         return ResponseEntity.ok(rentedFloors);
     }
 
@@ -72,27 +73,72 @@ public class TenantController {
             @RequestParam("subject") String subject,
             @RequestParam("message") String message,
             @RequestParam("severity") String severity,
+            @RequestParam("department") String department,
             @RequestParam("rentedFloorId") Long rentedFloorId,
-            @RequestParam(name = "images", required = false) MultipartFile[] images) {
+            @RequestParam(value = "images", required = false) MultipartFile[] images) {
 
-        // Replace these with actual ID
-        Long creatorId = 2L;
+        //TODO replace with actual user
+        Long creatorId = 1L;
 
-        TicketRequestDTO ticketRequestDTO = new TicketRequestDTO(subject, message, severity, rentedFloorId);
+        TicketRequestDTO ticketRequestDTO = new TicketRequestDTO(subject, message, severity, department, rentedFloorId);
 
-        TicketResponseDTOLite ticketResponse = ticketService.addTicket(ticketRequestDTO);
+        TicketResponseDTOLite ticketDto = ticketService.addTicket(ticketRequestDTO);
+
+        if (saveImages(images, ticketDto, creatorId)) return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(ticketDto, HttpStatus.CREATED);
+    }
+
+
+    //TODO: refactor, same code on administrator controller
+    @PostMapping("/ticket/{ticketId}/message")
+    public ResponseEntity<?> addMessageToTicket(
+            @PathVariable(value = "ticketId") Long ticketId,
+            @RequestParam("message") String message,
+            @RequestParam(value = "images", required = false) MultipartFile[] images
+    ) {
+
+        TicketMessageRequestDTO requestDTO = new TicketMessageRequestDTO(message);
+
+        TicketResponseDTOLite ticketDto = ticketService.addMessageToTicket(ticketId, requestDTO);
+
+        //TODO replace with actual user
+        Long creatorId = 1L;
+
+        if (saveImages(images, ticketDto, creatorId)) return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    //TODO: refactor, same code on administrator controller
+    private boolean saveImages(@RequestParam(value = "images", required = false) MultipartFile[] images, TicketResponseDTOLite ticketDto, Long creatorId) {
+        if (images == null) {
+            return false;
+        }
 
         try {
 
             // save the images to the disk
-            Set<String> imageUrls = photoService.savePhotos(creatorId, ticketResponse.ticketMessageId(), images);
+            Set<String> imageUrls = photoService.savePhotos(creatorId, ticketDto.ticketMessageId(), images);
 
             // save the path to the image into the ticket message
-            ticketService.addPhotosUrlsToMessage(ticketResponse.ticketMessageId(), imageUrls);
+            ticketService.addPhotosUrlsToMessage(ticketDto.ticketMessageId(), imageUrls);
         } catch (IOException e) {
             log.error(e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return true;
         }
-        return new ResponseEntity<>(ticketResponse, HttpStatus.CREATED);
+        return false;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

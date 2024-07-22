@@ -1,7 +1,9 @@
 package com.cleancode.real_estate_backend.services;
 
 import com.cleancode.real_estate_backend.dtos.administrator.ticket.response.TicketResponseDTOView;
+import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketMessageRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketRequestDTO;
+import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketUpdateRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketMessageResponseDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTOLite;
@@ -10,7 +12,9 @@ import com.cleancode.real_estate_backend.entities.AppUser;
 import com.cleancode.real_estate_backend.entities.RentedFloor;
 import com.cleancode.real_estate_backend.entities.Ticket;
 import com.cleancode.real_estate_backend.entities.TicketMessage;
+import com.cleancode.real_estate_backend.enums.ticket.TicketDepartment;
 import com.cleancode.real_estate_backend.enums.ticket.TicketSeverity;
+import com.cleancode.real_estate_backend.enums.ticket.TicketStatus;
 import com.cleancode.real_estate_backend.repositories.AppUserRepository;
 import com.cleancode.real_estate_backend.repositories.RentedFloorRepository;
 import com.cleancode.real_estate_backend.repositories.TicketMessageRepository;
@@ -96,6 +100,8 @@ public class TicketService {
         ticket.setSubject(ticketRequestDTO.subject());
         ticket.setSeverity(TicketSeverity.valueOf(ticketRequestDTO.severity()));
         ticket.setRentedFloor(rentedFloor);
+        ticket.setStatus(TicketStatus.PENDING);
+        ticket.setDepartment(TicketDepartment.valueOf(ticketRequestDTO.department()));
 
         //TODO: replace with actual users
         ticket.setCreator(creator);
@@ -112,8 +118,7 @@ public class TicketService {
 
     public TicketResponseDTO getTicket(Long ticketId) {
 
-        //TODO left join fetch
-        Ticket ticket = ticketRepository.findById(ticketId).orElseThrow(EntityNotFoundException::new);
+        Ticket ticket = ticketRepository.findWithCreatorById(ticketId).orElseThrow(EntityNotFoundException::new);
 
         List<TicketMessage> ticketMessages = ticketMessageRepository.findAllWithImageUrlsByTicket_Id(ticket.getId());
 
@@ -171,5 +176,45 @@ public class TicketService {
 
     public long countTickets() {
         return ticketRepository.count();
+    }
+
+    public TicketResponseDTOLite addMessageToTicket(Long ticketId, TicketMessageRequestDTO requestDTO) {
+
+        //todo replace with actual creator
+        AppUser creator = AppUser.builder().email("test@test.com").name("messagerRob").build();
+
+        appUserRepository.save(creator);
+
+        Ticket ticket = ticketRepository.findById(ticketId).orElseThrow(EntityNotFoundException::new);
+
+        TicketMessage ticketMessage = TicketMessage.builder()
+                .creator(creator)
+                .message(requestDTO.message())
+                .ticket(ticket)
+                .build();
+
+        TicketMessage savedMessage = ticketMessageRepository.save(ticketMessage);
+
+        return new TicketResponseDTOLite(ticket.getId(), savedMessage.getId(), ticket.getSubject());
+    }
+
+    public void updateTicket(Long ticketId, TicketUpdateRequestDTO ticketRequestDTO) {
+
+        Ticket foundTicket = ticketRepository.findById(ticketId).orElseThrow(EntityNotFoundException::new);
+
+        if (ticketRequestDTO.department() !=null) {
+
+            foundTicket.setDepartment(TicketDepartment.valueOf(ticketRequestDTO.department()));
+        }
+        if (ticketRequestDTO.severity() !=null) {
+
+            foundTicket.setSeverity(TicketSeverity.valueOf(ticketRequestDTO.severity()));
+        }
+        if (ticketRequestDTO.status() !=null) {
+
+            foundTicket.setStatus(TicketStatus.valueOf(ticketRequestDTO.status()));
+        }
+
+        ticketRepository.save(foundTicket);
     }
 }

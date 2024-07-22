@@ -29,9 +29,26 @@ public class Floor {
     @OneToMany(mappedBy = "floor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<RentedFloor> rentedFloors = new LinkedHashSet<>();
 
+    @Transient
+    private Double originalSize; // Temporary field to store the original size
+
     @PrePersist
     public void initAvailableSize() {
         this.availableSize = this.size;
+    }
+
+    @PostLoad
+    public void storeOriginalSize() {
+        this.originalSize = this.size;
+    }
+
+    @PreUpdate
+    public void updateAvailableSize() {
+        if (this.size != null && this.originalSize != null) {
+            double sizeDifference = this.size - this.originalSize;
+            this.availableSize += sizeDifference;
+            this.originalSize = this.size; // Update originalSize to current size after adjustment
+        }
     }
 
     public void rentFloor(Double previousRentedSize, Double newRentedSize) {
