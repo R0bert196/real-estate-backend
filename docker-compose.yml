@@ -1,0 +1,132 @@
+version: '3.8'
+name: real-estate
+
+networks:
+  real-estate-network:
+    external: true
+
+services:
+  real-estate-frontend:
+    image: real-estate-frontend:latest
+    container_name: real-estate-frontend
+    environment:
+      API_URL: http://real-estate-backend:8080
+    depends_on:
+      - real-estate-backend
+    networks:
+      - real-estate-network
+
+
+
+  real-estate-backend:
+    image: real-estate-backend:latest
+    container_name: real-estate-backend
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - APPLICATION_SECURITY_JWT_SECRET=${JWT_SECRET}
+      - SPRING_PROFILES_ACTIVE=${ACTIVE_ENVIRONMENT}
+      - PHOTO_UPLOAD_DIR=${PHOTO_UPLOADS_DIR}
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=real-estate-kafka1:29092
+    volumes:
+      - backend_uploads:/app/uploads
+    depends_on:
+      - real-estate-postgres
+      - real-estate-kafka1
+    networks:
+      - real-estate-network
+
+
+  real-estate-mailing-service:
+    image: real-estate-mailing-service:latest
+    container_name: real-estate-mailing-service
+    environment:
+      - SPRING_KAFKA_BOOTSTRAP-SERVERS=real-estate-kafka1:29092
+      - SPRING_MAIL_PASSWORD=${MAIL_PASSWORD}
+      - SPRING_MAIL_USERNAME=${MAIL_USERNAME}
+      - SPRING_MAIL_HOST=${MAIL_HOST}
+      - SPRING_MAIL_PORT=${MAIL_PORT}
+    depends_on:
+      - real-estate-kafka1
+    networks:
+      - real-estate-network
+
+
+  real-estate-postgres:
+    image: postgres:13
+    container_name: real-estate-postgres
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - real-estate-network
+
+
+  real-estate-nginx:
+    image: nginx:latest
+    container_name: real-estate-nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - real-estate-frontend
+      - real-estate-backend
+    volumes:
+      - ./nginx/real_estate.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - real-estate-network
+
+
+  real-estate-zoo1:
+    image: confluentinc/cp-zookeeper:7.3.2
+    hostname: real-estate-zoo1
+    container_name: real-estate-zoo1
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_SERVERS: real-estate-zoo1:2888:3888
+    networks:
+      - real-estate-network
+
+
+  real-estate-kafka1:
+    image: confluentinc/cp-kafka:7.3.2
+    hostname: real-estate-kafka1
+    container_name: real-estate-kafka1
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://real-estate-kafka1:19092,EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092,DOCKER://host.docker.internal:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,DOCKER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "real-estate-zoo1:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - real-estate-zoo1
+    networks:
+      - real-estate-network
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    environment:
+      - DYNAMIC_CONFIG_ENABLED=true
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=real-estate-kafka1:29092
+    ports:
+      - "8090:8080"
+    networks:
+      - real-estate-network
+
+
+volumes:
+  postgres_data:
+  backend_uploads:

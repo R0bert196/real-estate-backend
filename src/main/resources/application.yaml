@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: real_estate_backend
+  datasource:
+    url:
+    username:
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  kafka:
+    bootstrap-servers:
+
+application:
+  security:
+    jwt:
+      expiration: 86400000 # a day
+#      secret:
+      refresh-token:
+        expiration: 604800000 # 7 days
+
+#photo:
+#  upload:
+#    dir:
