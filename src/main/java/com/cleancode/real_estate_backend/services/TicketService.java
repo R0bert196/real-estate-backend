@@ -22,8 +22,8 @@ import com.cleancode.real_estate_backend.repositories.TicketRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,19 +32,18 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class TicketService {
-
     private final TicketRepository ticketRepository;
     private final AppUserRepository appUserRepository;
     private final TicketMessageRepository ticketMessageRepository;
     private final RentedFloorRepository rentedFloorRepository;
     private final PhotoService photoService;
 
-    public List<TicketResponseDTOView> getTicketsViewAdministrator(Long administratorId) {
-        return ticketRepository.findAllWithCreator().stream().map(this::convertToDTOView).toList();
+    public List<TicketResponseDTOView> getTicketsViewAdministrator(Long administratorId, Pageable pageable) {
+        return ticketRepository.findAllWithCreator(pageable).stream().map(this::convertToDTOView).toList();
     }
 
-    public List<TicketResponseDTOView> getTicketsViewTenant(Long tenantId) {
-        return ticketRepository.findAllWithCreator().stream().map(this::convertToDTOView).toList();
+    public List<TicketResponseDTOView> getTicketsViewTenant(Long tenantId, Pageable pageable) {
+        return ticketRepository.findAllWithCreator(pageable).stream().map(this::convertToDTOView).toList();
     }
 
     private TicketResponseDTOView convertToDTOView(Ticket ticket) {
@@ -175,6 +174,9 @@ public class TicketService {
         ticketMessageRepository.save(ticketMessage);
     }
 
+    public long countTickets() {
+        return ticketRepository.count();
+    }
 
     public TicketResponseDTOLite addMessageToTicket(Long ticketId, TicketMessageRequestDTO requestDTO) {
 

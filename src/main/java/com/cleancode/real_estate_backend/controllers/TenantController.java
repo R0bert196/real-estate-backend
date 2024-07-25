@@ -13,6 +13,8 @@ import com.cleancode.real_estate_backend.services.TenantService;
 import com.cleancode.real_estate_backend.services.TicketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,9 +45,12 @@ public class TenantController {
     }
 
     @GetMapping("/ticket")
-    public ResponseEntity<?> getTickets() {
-
-        List<TicketResponseDTOView> ticketResponseDTOViews = ticketService.getTicketsViewTenant(1L);
+    public ResponseEntity<?> getTickets(
+            @RequestParam (name = "pageNumber", required = true) Integer pageNumber,
+            @RequestParam (name = "numberOfItems", required = true) Integer numberOfItems
+    ) {
+        Pageable pageable= PageRequest.of(pageNumber, numberOfItems);
+        List<TicketResponseDTOView> ticketResponseDTOViews = ticketService.getTicketsViewTenant(1L, pageable);
         return ResponseEntity.ok(ticketResponseDTOViews);
     }
 
@@ -56,7 +61,14 @@ public class TenantController {
         return ResponseEntity.ok(dto);
     }
 
-    @PostMapping(path = "/ticket", consumes = "multipart/form-data")
+    @GetMapping("/ticket/count")
+    public ResponseEntity<?> countTickets(){
+        return ResponseEntity.ok(ticketService.countTickets()) ;
+    }
+
+    //severity : TicketSeverity
+    //rentedFloorId : foreignKey
+    @PostMapping(path = "/ticket",  consumes = "multipart/form-data")
     public ResponseEntity<TicketResponseDTOLite> createTicket(
             @RequestParam("subject") String subject,
             @RequestParam("message") String message,
