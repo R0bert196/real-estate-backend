@@ -7,7 +7,7 @@ networks:
 
 services:
   real-estate-frontend:
-    image: real-estate-frontend:latest
+    image: r0bert196/facility-management-frontend:latest
     container_name: real-estate-frontend
     environment:
       API_URL: http://real-estate-backend:8080
@@ -17,7 +17,7 @@ services:
       - real-estate-network
 
   real-estate-backend:
-    image: real-estate-backend:latest
+    image: r0bert196/facility-management-api:latest
     container_name: real-estate-backend
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
@@ -36,7 +36,7 @@ services:
       - real-estate-network
 
   real-estate-mailing-service:
-    image: real-estate-mailing-service:latest
+    image: r0bert196/facility-management-consumer-mailing:latest
     container_name: real-estate-mailing-service
     environment:
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=real-estate-kafka1:9092
@@ -58,6 +58,19 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - real-estate-network
+
+
+  real-estate-pgadmin:
+    image: dpage/pgadmin4
+    container_name: real-estate-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
     networks:
       - real-estate-network
 
@@ -110,9 +123,14 @@ services:
     container_name: real-estate-kafka-ui
     environment:
       - DYNAMIC_CONFIG_ENABLED=true
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=real-estate-kafka1:9092
+      - SERVER_SERVLET_CONTEXT_PATH=/kafka-ui
     networks:
       - real-estate-network
+    expose:
+      - "8080"
 
 volumes:
   postgres_data:
+  pgadmin-data:
   backend_uploads:
