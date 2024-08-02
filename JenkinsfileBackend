@@ -7,26 +7,11 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            agent any
-            steps {
-
-                sh 'git --version'
-
-                // Mark the workspace as a safe directory for Git
-                sh 'git config --global --add safe.directory "*"'
-
-                // Clean the workspace before checkout
-                cleanWs()
-
-                // Debugging info: List the environment variables and current directory
-                sh 'env'
-                sh 'pwd'
-
-                // Checkout the source code
-                checkout scm
-            }
-        }
+        stage('Cloning our Git') {
+             steps {
+                 git 'https://github.com/R0bert196/real-estate-backend.git'
+             }
+         }
 
         stage('Docker Build') {
             agent any
