@@ -7,13 +7,6 @@ pipeline {
     }
 
     stages {
-        stage('Cloning our Git') {
-        agent any
-             steps {
-                 git 'https://github.com/R0bert196/real-estate-backend.git'
-             }
-         }
-
         stage('Docker Build') {
             agent any
             steps {
