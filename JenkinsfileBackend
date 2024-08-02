@@ -10,6 +10,9 @@ pipeline {
         stage('Cloning our Git') {
         agent any
              steps {
+                 su - jenkins
+                 cd /var/jenkins_home
+                 mv caches/ caches2
                  git 'https://github.com/R0bert196/real-estate-backend.git'
              }
          }
