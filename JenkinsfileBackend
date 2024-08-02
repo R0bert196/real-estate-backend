@@ -23,6 +23,7 @@ pipeline {
             steps {
                 // Build the Docker image
                 script {
+                    git config --global --add safe.directory "*"
                     def imageName = "${DOCKER_IMAGE}:${DOCKER_TAG}"
                     sh "docker build -t ${imageName} ."
                 }
