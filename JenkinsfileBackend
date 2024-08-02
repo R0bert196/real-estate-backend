@@ -10,8 +10,10 @@ pipeline {
         stage('Checkout') {
             agent any
             steps {
+                // Mark the workspace as a safe directory for Git
+                sh 'git config --global --add safe.directory "*"'
+
                 // Clean the workspace before checkout
-                git config --global --add safe.directory "*"
                 cleanWs()
 
                 // Checkout the source code
@@ -24,7 +26,6 @@ pipeline {
             steps {
                 // Build the Docker image
                 script {
-                    git config --global --add safe.directory "*"
                     def imageName = "${DOCKER_IMAGE}:${DOCKER_TAG}"
                     sh "docker build -t ${imageName} ."
                 }
@@ -32,25 +33,27 @@ pipeline {
         }
 
         // Optionally, you can add a stage to push the Docker image to a registry
-//        stage('Docker Push') {
-//            agent any
-//            steps {
-//                script {
-//                    def imageName = "${DOCKER_IMAGE}:${DOCKER_TAG}"
-//                    withDockerRegistry([credentialsId: 'your-docker-registry-credentials', url: '']) {
-//                        sh "docker push ${imageName}"
-//                    }
-//                }
-//            }
-//        }
+        stage('Docker Push') {
+            agent any
+            steps {
+                script {
+                    def imageName = "${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    withDockerRegistry([credentialsId: 'your-docker-registry-credentials', url: '']) {
+                        sh "docker push ${imageName}"
+                    }
+                }
+            }
+        }
     }
 
     post {
         success {
             echo 'Build and push completed successfully!'
+            // You can add more steps like sending notifications
         }
         failure {
             echo 'Build or push failed!'
+            // You can add more steps like sending failure notifications
         }
     }
 }
