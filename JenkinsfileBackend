@@ -11,6 +11,7 @@ pipeline {
             agent any
             steps {
                 // Clean the workspace before checkout
+                git config --global --add safe.directory "*"
                 cleanWs()
 
                 // Checkout the source code
