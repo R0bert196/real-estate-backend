@@ -1,12 +1,54 @@
-#!groovy
 pipeline {
     agent none
-   stages {
-       stage('Docker Build') {
-           agent any
-           steps {
-               sh 'docker build -t r0bert196/facility-management-api:latest .'
-           }
-       }
-   }
- }
+
+    environment {
+        DOCKER_IMAGE = 'r0bert196/facility-management-api'
+        DOCKER_TAG = 'latest'
+    }
+
+    stages {
+        stage('Checkout') {
+            agent any
+            steps {
+                // Clean the workspace before checkout
+                cleanWs()
+
+                // Checkout the source code
+                checkout scm
+            }
+        }
+
+        stage('Docker Build') {
+            agent any
+            steps {
+                // Build the Docker image
+                script {
+                    def imageName = "${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    sh "docker build -t ${imageName} ."
+                }
+            }
+        }
+
+        // Optionally, you can add a stage to push the Docker image to a registry
+//        stage('Docker Push') {
+//            agent any
+//            steps {
+//                script {
+//                    def imageName = "${DOCKER_IMAGE}:${DOCKER_TAG}"
+//                    withDockerRegistry([credentialsId: 'your-docker-registry-credentials', url: '']) {
+//                        sh "docker push ${imageName}"
+//                    }
+//                }
+//            }
+//        }
+    }
+
+    post {
+        success {
+            echo 'Build and push completed successfully!'
+        }
+        failure {
+            echo 'Build or push failed!'
+        }
+    }
+}
