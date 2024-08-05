@@ -134,14 +134,15 @@ services:
 
   real-estate-jenkins:
     image: jenkins/jenkins:lts
-    container_name: real-estate-jenkins
-#    ports:
-#      - "8087:8080"
-#      - "50000:50000"
+    ports:
+      - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
+#    environment:
+#      - JENKINS_OPTS=--prefix=/jenkins
     environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
       - JENKINS_OPTS=--prefix=/jenkins
     privileged: true
     user: root
@@ -153,3 +154,4 @@ volumes:
   pgadmin-data:
   backend_uploads:
   jenkins_home:
+  jenkins-data:
