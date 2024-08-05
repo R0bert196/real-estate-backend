@@ -16,12 +16,14 @@ import com.cleancode.real_estate_backend.services.BuildingService;
 import com.cleancode.real_estate_backend.services.PhotoService;
 import com.cleancode.real_estate_backend.services.TenantService;
 import com.cleancode.real_estate_backend.services.TicketService;
+import com.cleancode.real_estate_backend.utils.IAuthenticationFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -39,12 +41,14 @@ public class AdministratorController {
     private final TenantService tenantService;
     private final TicketService ticketService;
     private final PhotoService photoService;
+    private final IAuthenticationFacade authenticationFacade;
 
 
     @GetMapping("/building")
     public ResponseEntity<?> getBuildings() {
 
-        List<BuildingResponseDTO> buildings = buildingService.getBuildings();
+        Authentication authentication = authenticationFacade.getAuthentication();
+        List<BuildingResponseDTO> buildings = buildingService.getBuildings(authentication.getName());
 
         return ResponseEntity.ok(buildings);
     }

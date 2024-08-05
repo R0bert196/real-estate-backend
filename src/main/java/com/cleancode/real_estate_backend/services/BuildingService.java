@@ -4,9 +4,13 @@ import com.cleancode.real_estate_backend.dtos.administrator.building.request.Bui
 import com.cleancode.real_estate_backend.dtos.administrator.building.response.BuildingResponseDTOLite;
 import com.cleancode.real_estate_backend.dtos.administrator.building.response.BuildingResponseDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.building.request.FloorRequestDTO;
+import com.cleancode.real_estate_backend.entities.AppUser;
 import com.cleancode.real_estate_backend.entities.Building;
 import com.cleancode.real_estate_backend.entities.Floor;
+import com.cleancode.real_estate_backend.repositories.AppUserRepository;
 import com.cleancode.real_estate_backend.repositories.BuildingRepository;
+import com.cleancode.real_estate_backend.utils.IAuthenticationFacade;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,15 +25,20 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class BuildingService {
+    private final AppUserRepository appUserRepository;
 
     private final BuildingRepository buildingRepository;
     private final FloorService floorService;
+    private final IAuthenticationFacade authenticationFacade;
 
     public BuildingResponseDTOLite addBuilding(BuildingRequestDTO buildingRequestDTO) {
 
         try {
 
-            Building building = convertToEntity(buildingRequestDTO);
+            AppUser user = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
+
+
+            Building building = convertToEntity(buildingRequestDTO, user);
 
             Building savedBuilding = buildingRepository.save(building);
             Set<Floor> savedFloors = savedBuilding.getFloors();
@@ -113,11 +122,13 @@ public class BuildingService {
         }
     }
 
-    private Building convertToEntity(BuildingRequestDTO dto) {
+    private Building convertToEntity(BuildingRequestDTO dto, AppUser user) {
+
 
         Building building = Building.builder()
                 .name(dto.buildingName())
                 .address(dto.address())
+                .manager(user)
                 .build();
         Set<Floor> floors = dto.floors().stream().map(this::convertToEntity).collect(Collectors.toSet());
 
@@ -157,9 +168,11 @@ public class BuildingService {
                 .build();
     }
 
-    public List<BuildingResponseDTO> getBuildings() {
+    public List<BuildingResponseDTO> getBuildings(String email) {
 
-        return buildingRepository.findAllWithFloors().stream().map(this::convertToDTO).toList();
+        AppUser user = appUserRepository.findByEmail(email).orElseThrow(EntityNotFoundException::new);
+
+        return buildingRepository.findAllWithFloorsByManagerId(user.getId()).stream().map(this::convertToDTO).toList();
 //        return buildingRepository.findAll().stream().map(this::convertToDTO).toList();
     }
 
