@@ -12,8 +12,9 @@ public interface TenantRepository extends JpaRepository<Tenant, Long> {
     @Query("SELECT DISTINCT t FROM Tenant t " +
             "LEFT JOIN FETCH t.rentedFloors rf " +
             "LEFT JOIN FETCH rf.floor f " +
-            "LEFT JOIN FETCH f.building")
-    List<Tenant> findAllWithRentedFloorsAndFloorsAndBuilding();
+            "LEFT JOIN FETCH f.building b " +
+            "WHERE b.manager = :managerId ")
+    List<Tenant> findAllWithRentedFloorsAndFloorsAndBuildingByManagerId(Long managerId);
 
 
     @Query("SELECT DISTINCT t FROM Tenant t " +

@@ -35,8 +35,9 @@ public class TenantService {
     public List<TenantResponseDTO> getTenants() {
 
 
-        //todo find in functie de administrator
-        List<Tenant> tenants = tenantRepository.findAllWithRentedFloorsAndFloorsAndBuilding();
+        AppUser manager =  appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
+
+        List<Tenant> tenants = tenantRepository.findAllWithRentedFloorsAndFloorsAndBuildingByManagerId(manager.getId());
         return tenants.stream().map(this::convertToDTO).toList();
     }
 
