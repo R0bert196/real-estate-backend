@@ -28,7 +28,8 @@ public class AuthenticationController {
     ) {
 
         try {
-            service.register(request, httpServletRequest, Role.ROLE_USER);
+            //TODO FIX!!!!
+            service.register(request, httpServletRequest, Role.ROLE_MANAGER);
 
             return ResponseEntity.ok().build();
         } catch (Exception e) {
