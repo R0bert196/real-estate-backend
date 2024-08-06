@@ -16,4 +16,7 @@ public interface BuildingRepository extends JpaRepository<Building, Long> {
 
     @Query("SELECT b FROM Building b LEFT JOIN FETCH b.manager LEFT JOIN FETCH b.floors WHERE b.id = :id")
     Optional<Building> findWithManagerAndFloorsById(Long id);
+
+    @Query("SELECT b FROM Building b LEFT JOIN FETCH b.manager WHERE b.id = :id")
+    Optional<Building> findByIdWithManager(Long id);
 }

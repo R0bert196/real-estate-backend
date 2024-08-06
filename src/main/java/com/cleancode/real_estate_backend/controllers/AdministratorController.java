@@ -72,7 +72,7 @@ public class AdministratorController {
     @DeleteMapping("/building/{buildingId}")
     public ResponseEntity<?> deleteBuilding(@PathVariable(value = "buildingId") Long buildingId) {
 
-        tenantService.deleteBuilding(buildingId);
+        buildingService.deleteBuilding(buildingId);
         return ResponseEntity.ok(null);
     }
 
