@@ -32,8 +32,10 @@ public class AppUser implements UserDetails {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, unique = false)
+    @Column(nullable = false, unique = true)
     private String email;
+
+    private String phoneNumber;
 
     @Column
     private String password;
@@ -55,16 +57,9 @@ public class AppUser implements UserDetails {
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<Role> role = new HashSet<>();
 
-    //TODO review, might change to @OneToMany on tenant
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_representant_id")
     private Tenant tenantRepresentant;
-
-//    @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private Set<Ticket> createdTickets = new HashSet<>();
-//
-//    @OneToMany(mappedBy = "responsibleManager", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private Set<Ticket> managedTickets = new HashSet<>();
 
 
     @Override
