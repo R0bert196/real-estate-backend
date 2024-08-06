@@ -3,14 +3,9 @@ package com.cleancode.real_estate_backend.services;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.request.TenantRequestDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTOLite;
-import com.cleancode.real_estate_backend.entities.Building;
-import com.cleancode.real_estate_backend.entities.Floor;
-import com.cleancode.real_estate_backend.entities.RentedFloor;
-import com.cleancode.real_estate_backend.entities.Tenant;
-import com.cleancode.real_estate_backend.repositories.BuildingRepository;
-import com.cleancode.real_estate_backend.repositories.FloorRepository;
-import com.cleancode.real_estate_backend.repositories.RentedFloorRepository;
-import com.cleancode.real_estate_backend.repositories.TenantRepository;
+import com.cleancode.real_estate_backend.entities.*;
+import com.cleancode.real_estate_backend.repositories.*;
+import com.cleancode.real_estate_backend.utils.IAuthenticationFacade;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +22,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class TenantService {
+    private final AppUserRepository appUserRepository;
 
     private final TenantRepository tenantRepository;
     private final BuildingService buildingService;
@@ -34,6 +30,7 @@ public class TenantService {
     private final FloorRepository floorRepository;
     private final RentedFloorRepository rentedFloorRepository;
     private final RentedFloorService rentedFloorService;
+    private final IAuthenticationFacade authenticationFacade;
 
     public List<TenantResponseDTO> getTenants() {
 
@@ -160,13 +157,4 @@ public class TenantService {
         return new TenantResponseDTOLite(tenant.getName());
     }
 
-
-    public void deleteBuilding(Long buildingId) {
-        try {
-            buildingRepository.deleteById(buildingId);
-
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Building selectedFloorId is null");
-        }
-    }
 }

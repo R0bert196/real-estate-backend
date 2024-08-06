@@ -184,5 +184,22 @@ public class BuildingService {
 //        return buildingRepository.findAll().stream().map(this::convertToDTO).toList();
     }
 
+    public void deleteBuilding(Long buildingId) {
+
+        try {
+            AppUser appUser = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
+
+            Building building = buildingRepository.findByIdWithManager(buildingId).orElseThrow(EntityNotFoundException::new);
+
+            if (!building.getManager().equals(appUser)) {
+                throw new IllegalArgumentException("Only the building manager can delete the building");
+            }
+
+            buildingRepository.deleteById(buildingId);
+
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Building id is null");
+        }
+    }
 
 }
