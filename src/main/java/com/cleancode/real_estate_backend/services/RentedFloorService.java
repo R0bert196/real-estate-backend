@@ -4,6 +4,7 @@ import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.Ren
 import com.cleancode.real_estate_backend.entities.AppUser;
 import com.cleancode.real_estate_backend.entities.RentedFloor;
 import com.cleancode.real_estate_backend.entities.Tenant;
+import com.cleancode.real_estate_backend.enums.Role;
 import com.cleancode.real_estate_backend.repositories.AppUserRepository;
 import com.cleancode.real_estate_backend.repositories.RentedFloorRepository;
 import com.cleancode.real_estate_backend.utils.IAuthenticationFacade;
@@ -36,10 +37,18 @@ public class RentedFloorService {
 
     public List<RentedFloorResponseDTO> getTenantRentedFloors() {
 
-        AppUser appUser = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
+        AppUser loggedUser = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
 
-        Tenant tenant = appUser.getTenantRepresentant();
+        if (loggedUser.getRole().stream()
+                .anyMatch(role -> role == Role.ROLE_MANAGER)) {
 
-        return rentedFloorRepository.findAllWithFloorAndBuildingByTenantId(tenant.getId()).stream().map(this::convertToDTO).toList();
+            return rentedFloorRepository.findAllWithFloorAndBuildingByManagerId(loggedUser.getId()).stream().map(this::convertToDTO).toList();
+        } else if (loggedUser.getRole().stream()
+                .anyMatch(role -> role == Role.ROLE_REPRESENTANT)) {
+
+            return rentedFloorRepository.findAllWithFloorAndBuildingByRepresentantId(loggedUser.getId()).stream().map(this::convertToDTO).toList();
+        }
+
+        throw new IllegalArgumentException("User not found");
     }
 }

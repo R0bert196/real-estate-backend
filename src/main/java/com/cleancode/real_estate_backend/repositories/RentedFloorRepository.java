@@ -15,6 +15,16 @@ public interface RentedFloorRepository extends JpaRepository<RentedFloor, Long> 
     @Query("SELECT rf FROM RentedFloor rf "+
             "LEFT JOIN FETCH rf.floor f " +
             "LEFT JOIN FETCH f.building b " +
-            "WHERE rf.tenant = :tenantId")
-    List<RentedFloor> findAllWithFloorAndBuildingByTenantId(Long tenantId);
+            "WHERE rf.tenant.id IN " +
+            "(SELECT t.id FROM Tenant t " +
+            "JOIN t.representants r " +
+            "WHERE r.id = :representantId)")
+    List<RentedFloor> findAllWithFloorAndBuildingByRepresentantId(Long representantId);
+
+
+    @Query("SELECT rf FROM RentedFloor rf "+
+            "LEFT JOIN FETCH rf.floor f " +
+            "LEFT JOIN FETCH f.building b " +
+            "WHERE f.building.manager.id = :managerId")
+    List<RentedFloor>  findAllWithFloorAndBuildingByManagerId(Long managerId);
 }
