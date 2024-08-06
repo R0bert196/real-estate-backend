@@ -1,5 +1,10 @@
 package com.cleancode.real_estate_backend.services;
 
+import com.cleancode.real_estate_backend.entities.AppUser;
+import com.cleancode.real_estate_backend.repositories.AppUserRepository;
+import com.cleancode.real_estate_backend.utils.IAuthenticationFacade;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,17 +20,24 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class PhotoService {
 
     @Value("${photo.upload.dir}")
     private String uploadDir;
 
-    public Set<String> savePhotos(Long creatorId, Long messageId, MultipartFile[] photos) throws IOException {
-        Path uploadPath = Paths.get(uploadDir, "creator_" + creatorId, "message_" + messageId);
+    IAuthenticationFacade authenticationFacade;
+    private final AppUserRepository appUserRepository;
+
+    public Set<String> savePhotos(Long messageId, MultipartFile[] photos) throws IOException {
+
+        AppUser creator = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
+
+        Path uploadPath = Paths.get(uploadDir, "creator_" + creator.getId(), "message_" + messageId);
         Files.createDirectories(uploadPath);
 
         return Arrays.stream(photos)
-                .map(photo -> savePhoto(creatorId, messageId, photo))
+                .map(photo -> savePhoto(creator.getId(), messageId, photo))
                 .collect(Collectors.toSet());
     }
 

@@ -12,12 +12,35 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
 
     @Query(
-    "SELECT t FROM Ticket t " +
-    "LEFT JOIN FETCH t.creator")
-    List<Ticket> findAllWithCreator(Pageable pageable);
+            "SELECT t FROM Ticket t " +
+            "LEFT JOIN FETCH t.creator " +
+            "WHERE t.responsibleManager.id = :managerId")
+    List<Ticket> findAllWithCreatorByManagerId(Pageable pageable, Long managerId);
 
-    @Query("SELECT t FROM Ticket t " +
+    @Query(
+            "SELECT t FROM Ticket t " +
+            "LEFT JOIN FETCH t.creator " +
+            "WHERE t.rentedFloor.tenant.id IN " +
+            "(SELECT tenant.id FROM Tenant tenant " +
+            "JOIN tenant.representants r " +
+            "WHERE r.id = :representantId)")
+    List<Ticket> findAllWithCreatorByRepresentantId(Pageable pageable, Long representantId);
+
+
+    @Query(
+            "SELECT t FROM Ticket t " +
             "LEFT JOIN FETCH t.creator " +
             " WHERE t.id = :id")
     Optional<Ticket> findWithCreatorById(Long id);
+
+    Long countTicketByResponsibleManagerId(Long managerId);
+
+    @Query(
+            "SELECT COUNT(t) FROM Ticket t " +
+                    "WHERE t.rentedFloor.tenant.id IN " +
+                    "(SELECT tenant.id FROM Tenant tenant " +
+                    "JOIN tenant.representants r " +
+                    "WHERE r.id = :representantId)")
+    Long countTicketsByRepresentantId(Long representantId);
+
 }

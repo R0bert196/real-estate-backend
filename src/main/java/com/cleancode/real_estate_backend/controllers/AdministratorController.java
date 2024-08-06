@@ -108,13 +108,12 @@ public class AdministratorController {
 
     @GetMapping("/ticket")
     public ResponseEntity<?> getTickets(
-            @RequestParam (name = "pageNumber", required = true) Integer pageNumber,
-            @RequestParam (name = "numberOfItems", required = true) Integer numberOfItems
+            @RequestParam(name = "pageNumber", required = true) Integer pageNumber,
+            @RequestParam(name = "numberOfItems", required = true) Integer numberOfItems
     ) {
-        System.out.println(pageNumber + " " + numberOfItems);
-            Pageable pageable = PageRequest.of(pageNumber, numberOfItems);
-            List<TicketResponseDTOView> ticketResponseDTOViews = ticketService.getTicketsViewAdministrator(1L, pageable);
-            return ResponseEntity.ok(ticketResponseDTOViews);
+        Pageable pageable = PageRequest.of(pageNumber, numberOfItems);
+        List<TicketResponseDTOView> ticketResponseDTOViews = ticketService.getTicketsViewManager(pageable);
+        return ResponseEntity.ok(ticketResponseDTOViews);
     }
 
     @PostMapping("/ticket")
@@ -126,14 +125,12 @@ public class AdministratorController {
             @RequestParam("rentedFloorId") Long rentedFloorId,
             @RequestParam(value = "images", required = false) MultipartFile[] images) {
 
-        //TODO replace with actual user
-        Long creatorId = 1L;
 
         TicketRequestDTO ticketRequestDTO = new TicketRequestDTO(subject, message, severity, department, rentedFloorId);
 
         TicketResponseDTOLite ticketDto = ticketService.addTicket(ticketRequestDTO);
 
-        if (saveImages(images, ticketDto, creatorId)) return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        if (saveImages(images, ticketDto)) return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         return new ResponseEntity<>(ticketDto, HttpStatus.CREATED);
 
     }
@@ -146,8 +143,8 @@ public class AdministratorController {
     }
 
     @GetMapping("/ticket/count")
-    public ResponseEntity<?> countTickets(){
-        return ResponseEntity.ok(ticketService.countTickets()) ;
+    public ResponseEntity<?> countTickets() {
+        return ResponseEntity.ok(ticketService.countTickets());
     }
 
     //TODO: refactor, same code on tenant controller
@@ -162,15 +159,12 @@ public class AdministratorController {
 
         TicketResponseDTOLite ticketDto = ticketService.addMessageToTicket(ticketId, requestDTO);
 
-        //TODO replace with actual user
-        Long creatorId = 1L;
-
-        if (saveImages(images, ticketDto, creatorId)) return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        if (saveImages(images, ticketDto)) return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     //TODO: refactor, same code on tenant controller
-    private boolean saveImages(@RequestParam(value = "images", required = false) MultipartFile[] images, TicketResponseDTOLite ticketDto, Long creatorId) {
+    private boolean saveImages(@RequestParam(value = "images", required = false) MultipartFile[] images, TicketResponseDTOLite ticketDto) {
         if (images == null) {
             return false;
         }
@@ -178,7 +172,7 @@ public class AdministratorController {
         try {
 
             // save the images to the disk
-            Set<String> imageUrls = photoService.savePhotos(creatorId, ticketDto.ticketMessageId(), images);
+            Set<String> imageUrls = photoService.savePhotos(ticketDto.ticketMessageId(), images);
 
             // save the path to the image into the ticket message
             ticketService.addPhotosUrlsToMessage(ticketDto.ticketMessageId(), imageUrls);

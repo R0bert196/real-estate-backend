@@ -48,7 +48,7 @@ public class TenantController {
             @RequestParam (name = "numberOfItems", required = true) Integer numberOfItems
     ) {
         Pageable pageable= PageRequest.of(pageNumber, numberOfItems);
-        List<TicketResponseDTOView> ticketResponseDTOViews = ticketService.getTicketsViewTenant(1L, pageable);
+        List<TicketResponseDTOView> ticketResponseDTOViews = ticketService.getTicketsViewTenant(pageable);
         return ResponseEntity.ok(ticketResponseDTOViews);
     }
 
@@ -75,14 +75,11 @@ public class TenantController {
             @RequestParam("rentedFloorId") Long rentedFloorId,
             @RequestParam(value = "images", required = false) MultipartFile[] images) {
 
-        //TODO replace with actual user
-        Long creatorId = 1L;
-
         TicketRequestDTO ticketRequestDTO = new TicketRequestDTO(subject, message, severity, department, rentedFloorId);
 
         TicketResponseDTOLite ticketDto = ticketService.addTicket(ticketRequestDTO);
 
-        if (saveImages(images, ticketDto, creatorId)) return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        if (saveImages(images, ticketDto)) return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         return new ResponseEntity<>(ticketDto, HttpStatus.CREATED);
     }
 
@@ -99,15 +96,12 @@ public class TenantController {
 
         TicketResponseDTOLite ticketDto = ticketService.addMessageToTicket(ticketId, requestDTO);
 
-        //TODO replace with actual user
-        Long creatorId = 1L;
-
-        if (saveImages(images, ticketDto, creatorId)) return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        if (saveImages(images, ticketDto)) return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     //TODO: refactor, same code on administrator controller
-    private boolean saveImages(@RequestParam(value = "images", required = false) MultipartFile[] images, TicketResponseDTOLite ticketDto, Long creatorId) {
+    private boolean saveImages(@RequestParam(value = "images", required = false) MultipartFile[] images, TicketResponseDTOLite ticketDto) {
         if (images == null) {
             return false;
         }
@@ -115,7 +109,7 @@ public class TenantController {
         try {
 
             // save the images to the disk
-            Set<String> imageUrls = photoService.savePhotos(creatorId, ticketDto.ticketMessageId(), images);
+            Set<String> imageUrls = photoService.savePhotos(ticketDto.ticketMessageId(), images);
 
             // save the path to the image into the ticket message
             ticketService.addPhotosUrlsToMessage(ticketDto.ticketMessageId(), imageUrls);

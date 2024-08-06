@@ -12,6 +12,7 @@ import com.cleancode.real_estate_backend.entities.AppUser;
 import com.cleancode.real_estate_backend.entities.RentedFloor;
 import com.cleancode.real_estate_backend.entities.Ticket;
 import com.cleancode.real_estate_backend.entities.TicketMessage;
+import com.cleancode.real_estate_backend.enums.Role;
 import com.cleancode.real_estate_backend.enums.ticket.TicketDepartment;
 import com.cleancode.real_estate_backend.enums.ticket.TicketSeverity;
 import com.cleancode.real_estate_backend.enums.ticket.TicketStatus;
@@ -19,11 +20,13 @@ import com.cleancode.real_estate_backend.repositories.AppUserRepository;
 import com.cleancode.real_estate_backend.repositories.RentedFloorRepository;
 import com.cleancode.real_estate_backend.repositories.TicketMessageRepository;
 import com.cleancode.real_estate_backend.repositories.TicketRepository;
+import com.cleancode.real_estate_backend.utils.IAuthenticationFacade;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,13 +40,21 @@ public class TicketService {
     private final TicketMessageRepository ticketMessageRepository;
     private final RentedFloorRepository rentedFloorRepository;
     private final PhotoService photoService;
+    private final IAuthenticationFacade authenticationFacade;
 
-    public List<TicketResponseDTOView> getTicketsViewAdministrator(Long administratorId, Pageable pageable) {
-        return ticketRepository.findAllWithCreator(pageable).stream().map(this::convertToDTOView).toList();
+    public List<TicketResponseDTOView> getTicketsViewManager(Pageable pageable) {
+
+        AppUser manager = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
+
+
+        return ticketRepository.findAllWithCreatorByManagerId(pageable, manager.getId()).stream().map(this::convertToDTOView).toList();
     }
 
-    public List<TicketResponseDTOView> getTicketsViewTenant(Long tenantId, Pageable pageable) {
-        return ticketRepository.findAllWithCreator(pageable).stream().map(this::convertToDTOView).toList();
+    public List<TicketResponseDTOView> getTicketsViewTenant(Pageable pageable) {
+
+        AppUser representant = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
+
+        return ticketRepository.findAllWithCreatorByRepresentantId(pageable, representant.getId()).stream().map(this::convertToDTOView).toList();
     }
 
     private TicketResponseDTOView convertToDTOView(Ticket ticket) {
@@ -78,23 +89,15 @@ public class TicketService {
     @Transactional
     public TicketResponseDTOLite addTicket(TicketRequestDTO ticketRequestDTO) {
 
-        AppUser creator = AppUser.builder().email("test@test.com").name("robbob").build();
+        AppUser creator = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
 
         TicketMessage ticketMessage = TicketMessage.builder()
                 .message(ticketRequestDTO.message())
                 .creator(creator)
                 .build();
-//        ticketMessage.setImageUrls(ticketRequestDTO.imageUrls());
 
         RentedFloor rentedFloor = rentedFloorRepository.findById(ticketRequestDTO.rentedFloorId()).orElseThrow(EntityNotFoundException::new);
 
-
-        //TODO: replace with actual users
-
-        AppUser manager = AppUser.builder().email("test2@test.com").name("managerRob").build();
-
-        appUserRepository.save(creator);
-        appUserRepository.save(manager);
 
         Ticket ticket = new Ticket();
         ticket.setSubject(ticketRequestDTO.subject());
@@ -103,8 +106,9 @@ public class TicketService {
         ticket.setStatus(TicketStatus.PENDING);
         ticket.setDepartment(TicketDepartment.valueOf(ticketRequestDTO.department()));
 
-        //TODO: replace with actual users
         ticket.setCreator(creator);
+
+        AppUser manager = rentedFloor.getFloor().getBuilding().getManager();
         ticket.setResponsibleManager(manager);
 
         Ticket savedTicket = ticketRepository.save(ticket);
@@ -119,6 +123,12 @@ public class TicketService {
     public TicketResponseDTO getTicket(Long ticketId) {
 
         Ticket ticket = ticketRepository.findWithCreatorById(ticketId).orElseThrow(EntityNotFoundException::new);
+
+        AppUser manager = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
+
+        if (!ticket.getResponsibleManager().equals(manager)) {
+            throw new IllegalArgumentException("Only the manager of this ticket can view the details");
+        }
 
         List<TicketMessage> ticketMessages = ticketMessageRepository.findAllWithImageUrlsByTicket_Id(ticket.getId());
 
@@ -174,16 +184,28 @@ public class TicketService {
         ticketMessageRepository.save(ticketMessage);
     }
 
-    public long countTickets() {
-        return ticketRepository.count();
+    public Long countTickets() {
+
+        AppUser loggedUser = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
+
+        if (loggedUser.getRole().stream()
+                .anyMatch(role -> role == Role.ROLE_MANAGER)) {
+
+            return ticketRepository.countTicketByResponsibleManagerId(loggedUser.getId());
+        } else if (loggedUser.getRole().stream()
+                .anyMatch(role -> role == Role.ROLE_REPRESENTANT)) {
+
+            return ticketRepository.countTicketsByRepresentantId(loggedUser.getId());
+        }
+
+        throw new IllegalArgumentException("User not found");
+
+
     }
 
     public TicketResponseDTOLite addMessageToTicket(Long ticketId, TicketMessageRequestDTO requestDTO) {
 
-        //todo replace with actual creator
-        AppUser creator = AppUser.builder().email("test@test.com").name("messagerRob").build();
-
-        appUserRepository.save(creator);
+        AppUser creator = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
 
         Ticket ticket = ticketRepository.findById(ticketId).orElseThrow(EntityNotFoundException::new);
 
@@ -200,17 +222,23 @@ public class TicketService {
 
     public void updateTicket(Long ticketId, TicketUpdateRequestDTO ticketRequestDTO) {
 
+        AppUser loggedUser = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
+
         Ticket foundTicket = ticketRepository.findById(ticketId).orElseThrow(EntityNotFoundException::new);
 
-        if (ticketRequestDTO.department() !=null) {
+        if (!foundTicket.getResponsibleManager().equals(loggedUser)) {
+            throw new IllegalArgumentException("Only the responsible manager of the ticket can update the ticket");
+        }
+
+        if (ticketRequestDTO.department() != null) {
 
             foundTicket.setDepartment(TicketDepartment.valueOf(ticketRequestDTO.department()));
         }
-        if (ticketRequestDTO.severity() !=null) {
+        if (ticketRequestDTO.severity() != null) {
 
             foundTicket.setSeverity(TicketSeverity.valueOf(ticketRequestDTO.severity()));
         }
-        if (ticketRequestDTO.status() !=null) {
+        if (ticketRequestDTO.status() != null) {
 
             foundTicket.setStatus(TicketStatus.valueOf(ticketRequestDTO.status()));
         }
