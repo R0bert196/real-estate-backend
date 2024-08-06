@@ -6,7 +6,6 @@ import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketMessag
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTOLite;
-import com.cleancode.real_estate_backend.enums.ticket.TicketSeverity;
 import com.cleancode.real_estate_backend.services.PhotoService;
 import com.cleancode.real_estate_backend.services.RentedFloorService;
 import com.cleancode.real_estate_backend.services.TenantService;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -39,8 +37,8 @@ public class TenantController {
     @GetMapping("/rented-floors")
     public ResponseEntity<?> getRentedFloors() {
 
-        //todo get rented floors by tenant id
-        List<RentedFloorResponseDTO> rentedFloors = rentedFloorService.getRentedFloors();
+
+        List<RentedFloorResponseDTO> rentedFloors = rentedFloorService.getTenantRentedFloors();
         return ResponseEntity.ok(rentedFloors);
     }
 

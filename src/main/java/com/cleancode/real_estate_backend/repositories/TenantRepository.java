@@ -13,7 +13,7 @@ public interface TenantRepository extends JpaRepository<Tenant, Long> {
             "LEFT JOIN FETCH t.rentedFloors rf " +
             "LEFT JOIN FETCH rf.floor f " +
             "LEFT JOIN FETCH f.building b " +
-            "WHERE b.manager = :managerId ")
+            "WHERE t.manager = :managerId ")
     List<Tenant> findAllWithRentedFloorsAndFloorsAndBuildingByManagerId(Long managerId);
 
 

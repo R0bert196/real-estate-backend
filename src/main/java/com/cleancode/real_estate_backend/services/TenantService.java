@@ -55,6 +55,10 @@ public class TenantService {
 
         Tenant tenant = new Tenant();
 
+        AppUser appUser = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
+
+        tenant.setManager(appUser);
+
         tenant.setName(tenantCreationRequest.tenantName());
 
 
@@ -91,6 +95,14 @@ public class TenantService {
     public void deleteTenant(Long tenantId) {
         try {
 
+            AppUser manager = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
+
+            Tenant tenant = tenantRepository.findById(tenantId).orElseThrow(EntityNotFoundException::new);
+
+            if (!tenant.getManager().equals(manager)) {
+                throw new IllegalArgumentException("Only the tenant's manager can delete the tenant");
+            }
+
             tenantRepository.deleteById(tenantId);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Tenant selectedFloorId is null");
@@ -101,6 +113,13 @@ public class TenantService {
 
         Tenant tenant = tenantRepository.findWithRentedFloorsAndFloorsById(tenantId)
                 .orElseThrow(EntityNotFoundException::new);
+
+        AppUser manager =  appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
+
+        if (!tenant.getManager().equals(manager)) {
+            throw new RuntimeException("Only the tenant's manager can update the tenant");
+        }
+
 
         tenant.setName(tenantRequestDTO.tenantName());
 
