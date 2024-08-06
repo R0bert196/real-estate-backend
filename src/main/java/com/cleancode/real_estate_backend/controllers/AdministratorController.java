@@ -64,8 +64,7 @@ public class AdministratorController {
             @PathVariable(value = "buildingId") Long buildingId,
             @RequestBody BuildingRequestDTO buildingRequestDTO) {
 
-        System.out.println(buildingId);
-        System.out.println(buildingRequestDTO);
+
         return ResponseEntity.ok(buildingService.updateBuilding(buildingId, buildingRequestDTO));
     }
 

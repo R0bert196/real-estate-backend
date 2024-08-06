@@ -55,13 +55,21 @@ public class BuildingService {
     public BuildingResponseDTOLite updateBuilding(Long buildingId, BuildingRequestDTO buildingRequestDTO) {
         try {
 
-            Optional<Building> buildingOpt = buildingRepository.findById(buildingId);
+            Optional<Building> buildingOpt = buildingRepository.findWithManagerAndFloorsById(buildingId);
 
             if (buildingOpt.isEmpty()) {
                 throw new IllegalArgumentException("Building not found");
             }
 
+
+            AppUser loggedInUser = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
+
+
             Building building = buildingOpt.get();
+
+            if (!building.getManager().equals(loggedInUser)) {
+                throw new IllegalArgumentException("Only the building manager can make changes");
+            }
 
             building.setName(buildingRequestDTO.buildingName());
             building.setAddress(buildingRequestDTO.address());
