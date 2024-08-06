@@ -29,4 +29,8 @@ public class Tenant {
     @OneToMany(mappedBy = "tenantRepresentant", orphanRemoval = true)
     private Set<AppUser> representants = new LinkedHashSet<>();
 
+    @ManyToOne
+    @JoinColumn(name = "manager_id")
+    private AppUser manager;
+
 }
