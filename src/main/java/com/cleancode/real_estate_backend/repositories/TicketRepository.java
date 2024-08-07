@@ -30,6 +30,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     @Query(
             "SELECT t FROM Ticket t " +
             "LEFT JOIN FETCH t.creator " +
+            "LEFT JOIN FETCH t.responsibleManager " +
             " WHERE t.id = :id")
     Optional<Ticket> findWithCreatorById(Long id);
 
