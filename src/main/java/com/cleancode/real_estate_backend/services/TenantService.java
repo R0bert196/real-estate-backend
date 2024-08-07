@@ -32,6 +32,7 @@ public class TenantService {
     private final IAuthenticationFacade authenticationFacade;
 
     public List<TenantResponseDTO> getTenants() {
+
         log.info("Fetching the authenticated user.");
         AppUser manager = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName())
                 .orElseThrow(EntityNotFoundException::new);
@@ -41,6 +42,21 @@ public class TenantService {
 
         log.info("Fetched {} tenants for manager with ID: {}", tenants.size(), manager.getId());
         return tenants.stream().map(this::convertToDTO).toList();
+    }
+
+    public TenantResponseDTO getTenantDetails(Long tenantId) {
+
+        log.info("Fetching the authenticated user.");
+        AppUser manager = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName())
+                .orElseThrow(EntityNotFoundException::new);
+
+        log.debug("Authenticated user: {}", manager.getEmail());
+
+        Tenant tenant = tenantRepository.findWithRentedFloorsAndFloorsAndBuildingByManagerIdAndTenantId(manager.getId(), tenantId);
+
+        log.info("Fetched tenant with ID: {}", tenant.getId());
+        return convertToDTO(tenant);
+
     }
 
     private TenantResponseDTO convertToDTO(Tenant entity) {

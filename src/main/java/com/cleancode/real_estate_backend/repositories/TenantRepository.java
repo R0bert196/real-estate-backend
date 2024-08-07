@@ -16,6 +16,14 @@ public interface TenantRepository extends JpaRepository<Tenant, Long> {
             "WHERE t.manager.id = :managerId ")
     List<Tenant> findAllWithRentedFloorsAndFloorsAndBuildingByManagerId(Long managerId);
 
+    @Query("SELECT t FROM Tenant t " +
+            "LEFT JOIN FETCH t.rentedFloors rf " +
+            "LEFT JOIN FETCH rf.floor f " +
+            "LEFT JOIN FETCH f.building b " +
+            "WHERE t.manager.id = :managerId " +
+            "AND t.id = :tenantId")
+    Tenant findWithRentedFloorsAndFloorsAndBuildingByManagerIdAndTenantId(Long managerId, Long tenantId);
+
 
     @Query("SELECT DISTINCT t FROM Tenant t " +
             "LEFT JOIN FETCH t.rentedFloors rf " +

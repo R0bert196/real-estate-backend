@@ -139,6 +139,17 @@ public class ManagerController {
         return ResponseEntity.ok(null);
     }
 
+
+    @GetMapping("/tenant/{id}")
+    public ResponseEntity<?> getTenantDetails(@PathVariable Long id) {
+        log.info("Request to fetch details of the tenant with id {} received.", id);
+
+        TenantResponseDTO tenant = tenantService.getTenantDetails(id);
+
+        log.info("Returning tenant: {}", tenant.name());
+        return ResponseEntity.ok(tenant);
+    }
+
     @GetMapping("/ticket")
     public ResponseEntity<?> getTickets(
             @RequestParam(name = "pageNumber", required = true) Integer pageNumber,
