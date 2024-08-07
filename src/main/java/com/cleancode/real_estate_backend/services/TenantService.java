@@ -9,7 +9,7 @@ import com.cleancode.real_estate_backend.utils.IAuthenticationFacade;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,13 +19,12 @@ import java.util.stream.Collectors;
 
 
 @Service
-@Slf4j
+@Log4j2
 @RequiredArgsConstructor
 public class TenantService {
-    private final AppUserRepository appUserRepository;
 
+    private final AppUserRepository appUserRepository;
     private final TenantRepository tenantRepository;
-    private final BuildingService buildingService;
     private final BuildingRepository buildingRepository;
     private final FloorRepository floorRepository;
     private final RentedFloorRepository rentedFloorRepository;
@@ -33,42 +32,46 @@ public class TenantService {
     private final IAuthenticationFacade authenticationFacade;
 
     public List<TenantResponseDTO> getTenants() {
+        log.info("Fetching the authenticated user.");
+        AppUser manager = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName())
+                .orElseThrow(EntityNotFoundException::new);
 
-
-        AppUser manager =  appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
-
+        log.debug("Authenticated user: {}", manager.getEmail());
         List<Tenant> tenants = tenantRepository.findAllWithRentedFloorsAndFloorsAndBuildingByManagerId(manager.getId());
+
+        log.info("Fetched {} tenants for manager with ID: {}", tenants.size(), manager.getId());
         return tenants.stream().map(this::convertToDTO).toList();
     }
 
     private TenantResponseDTO convertToDTO(Tenant entity) {
-
+        log.debug("Converting tenant entity to DTO: {}", entity.getName());
         return new TenantResponseDTO(
                 entity.getId(),
                 entity.getName(),
                 entity.getRentedFloors().stream().map(rentedFloorService::convertToDTO).toList());
     }
 
-
     @Transactional
     public TenantResponseDTOLite addTenant(TenantRequestDTO tenantCreationRequest) {
-
+        log.info("Adding new tenant with name: {}", tenantCreationRequest.tenantName());
         Tenant tenant = new Tenant();
 
-        AppUser appUser = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
+        AppUser appUser = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName())
+                .orElseThrow(EntityNotFoundException::new);
 
         tenant.setManager(appUser);
-
         tenant.setName(tenantCreationRequest.tenantName());
 
-
         tenantCreationRequest.rentedFloors().forEach(rentedFloorsRequestDTO -> {
+            log.debug("Processing rented floor for building ID: {}, floor ID: {}",
+                    rentedFloorsRequestDTO.selectedBuildingId(),
+                    rentedFloorsRequestDTO.selectedFloorId());
 
             Building building = buildingRepository.findById(rentedFloorsRequestDTO.selectedBuildingId())
-                    .orElseThrow(() -> new RuntimeException("Building id not found"));
+                    .orElseThrow(() -> new RuntimeException("Building ID not found"));
 
             Floor floor = floorRepository.findById(rentedFloorsRequestDTO.selectedFloorId())
-                    .orElseThrow(() -> new RuntimeException("Floor id not found"));
+                    .orElseThrow(() -> new RuntimeException("Floor ID not found"));
 
             RentedFloor rentedFloor = RentedFloor.builder()
                     .floor(floor)
@@ -83,46 +86,52 @@ public class TenantService {
             rentedFloorRepository.save(rentedFloor);
 
             floorRepository.save(floor);
-
-
+            log.debug("Rented floor saved for tenant: {}", tenant.getName());
         });
 
         Tenant savedTenant = tenantRepository.save(tenant);
+        log.info("Tenant added successfully: {}", savedTenant.getName());
 
         return new TenantResponseDTOLite(savedTenant.getName());
     }
 
     public void deleteTenant(Long tenantId) {
         try {
+            log.info("Deleting tenant with ID: {}", tenantId);
+            AppUser manager = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName())
+                    .orElseThrow(EntityNotFoundException::new);
 
-            AppUser manager = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
-
-            Tenant tenant = tenantRepository.findById(tenantId).orElseThrow(EntityNotFoundException::new);
+            Tenant tenant = tenantRepository.findById(tenantId)
+                    .orElseThrow(EntityNotFoundException::new);
 
             if (!tenant.getManager().equals(manager)) {
+                log.error("Manager mismatch: Logged in manager does not manage this tenant.");
                 throw new IllegalArgumentException("Only the tenant's manager can delete the tenant");
             }
 
             tenantRepository.deleteById(tenantId);
+            log.info("Tenant deleted successfully with ID: {}", tenantId);
         } catch (IllegalArgumentException e) {
+            log.error("Failed to delete tenant with ID: {}. Error: {}", tenantId, e.getMessage());
             throw new RuntimeException("Tenant selectedFloorId is null");
         }
     }
 
     public TenantResponseDTOLite updateTenant(Long tenantId, TenantRequestDTO tenantRequestDTO) {
+        log.info("Updating tenant with ID: {}", tenantId);
 
         Tenant tenant = tenantRepository.findWithRentedFloorsAndFloorsById(tenantId)
                 .orElseThrow(EntityNotFoundException::new);
 
-        AppUser manager =  appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
+        AppUser manager = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName())
+                .orElseThrow(EntityNotFoundException::new);
 
         if (!tenant.getManager().equals(manager)) {
+            log.error("Manager mismatch: Logged in manager does not manage this tenant.");
             throw new RuntimeException("Only the tenant's manager can update the tenant");
         }
 
-
         tenant.setName(tenantRequestDTO.tenantName());
-
 
         // Retrieve existing rentedFloors to manage available space correctly
         Map<Long, Double> existingRentedSizes = tenant.getRentedFloors().stream()
@@ -143,7 +152,6 @@ public class TenantService {
                     rentedFloor.setMaintenanceSquareMeterPrice(rentedFloorRequest.maintenanceSquareMeterPrice());
 
                     rentedFloor.setId(rentedFloorRequest.selectedFloorId());
-
                     rentedFloor.setTenant(tenant); // Set the bidirectional relationship
 
                     // Set the floor association
@@ -154,10 +162,11 @@ public class TenantService {
                     Double previousRentedSize = existingRentedSizes.getOrDefault(rentedFloorRequest.selectedFloorId(), 0.0);
                     floorEntity.rentFloor(previousRentedSize, rentedFloorRequest.rentedSize());
 
-                    //remove floor key if its values has been only updated
+                    // Remove floor key if its values have only been updated
                     existingRentedSizes.remove(rentedFloorRequest.selectedFloorId());
 
                     rentedFloor.setFloor(floorEntity);
+                    log.debug("Updated rented floor for tenant: {}", tenant.getName());
 
                     return rentedFloor;
                 })
@@ -165,16 +174,16 @@ public class TenantService {
 
         tenant.getRentedFloors().addAll(rentedFloors);
 
-        // give back the available sizes to the deleted floors
+        // Give back the available sizes to the deleted floors
         existingRentedSizes.forEach((key, value) -> {
             Floor floor = floorRepository.findById(key).orElseThrow(EntityNotFoundException::new);
             floor.rentFloor(value, 0.0);
-
+            log.debug("Updated floor size for floor ID: {}", key);
         });
 
         tenantRepository.save(tenant);
+        log.info("Tenant updated successfully: {}", tenant.getName());
 
         return new TenantResponseDTOLite(tenant.getName());
     }
-
 }
