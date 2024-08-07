@@ -124,11 +124,29 @@ public class TicketService {
 
         Ticket ticket = ticketRepository.findWithCreatorById(ticketId).orElseThrow(EntityNotFoundException::new);
 
-        AppUser manager = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
+        AppUser loggedUser = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName())
+                .orElseThrow(EntityNotFoundException::new);
 
-        if (!ticket.getResponsibleManager().equals(manager)) {
-            throw new IllegalArgumentException("Only the manager of this ticket can view the details");
+        Role userRole = loggedUser.getRole().stream().findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("User has no assigned roles"));
+
+        switch (userRole) {
+            case ROLE_MANAGER:
+                if (!ticket.getResponsibleManager().equals(loggedUser)) {
+                    throw new IllegalArgumentException("Only the manager of this ticket can view the details");
+                }
+                break;
+            case ROLE_REPRESENTANT:
+                boolean isRepresentant = appUserRepository.findTicketTenantRepresentatns().stream()
+                        .anyMatch(appUser -> appUser.equals(loggedUser));
+                if (!isRepresentant) {
+                    throw new IllegalArgumentException("Only the responsible person of this ticket can view the details");
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("User doesn't have sufficient permission");
         }
+
 
         List<TicketMessage> ticketMessages = ticketMessageRepository.findAllWithImageUrlsByTicket_Id(ticket.getId());
 

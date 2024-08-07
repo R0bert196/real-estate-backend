@@ -64,8 +64,7 @@ public class TenantController {
         return ResponseEntity.ok(ticketService.countTickets()) ;
     }
 
-    //severity : TicketSeverity
-    //rentedFloorId : foreignKey
+
     @PostMapping(path = "/ticket",  consumes = "multipart/form-data")
     public ResponseEntity<TicketResponseDTOLite> createTicket(
             @RequestParam("subject") String subject,

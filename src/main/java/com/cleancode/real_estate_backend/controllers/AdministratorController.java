@@ -4,6 +4,7 @@ import
         com.cleancode.real_estate_backend.dtos.administrator.building.request.BuildingRequestDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.building.response.BuildingResponseDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.request.TenantRequestDTO;
+import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.RentedFloorResponseDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTO;
 import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTOLite;
 import com.cleancode.real_estate_backend.dtos.administrator.ticket.response.TicketResponseDTOView;
@@ -12,10 +13,7 @@ import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketReques
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketUpdateRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTOLite;
-import com.cleancode.real_estate_backend.services.BuildingService;
-import com.cleancode.real_estate_backend.services.PhotoService;
-import com.cleancode.real_estate_backend.services.TenantService;
-import com.cleancode.real_estate_backend.services.TicketService;
+import com.cleancode.real_estate_backend.services.*;
 import com.cleancode.real_estate_backend.utils.IAuthenticationFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +40,7 @@ public class AdministratorController {
     private final TicketService ticketService;
     private final PhotoService photoService;
     private final IAuthenticationFacade authenticationFacade;
+    private final RentedFloorService rentedFloorService;
 
 
     @GetMapping("/building")
@@ -75,6 +74,15 @@ public class AdministratorController {
         buildingService.deleteBuilding(buildingId);
         return ResponseEntity.ok(null);
     }
+
+    @GetMapping("/rented-floors")
+    public ResponseEntity<?> getRentedFloors() {
+
+
+        List<RentedFloorResponseDTO> rentedFloors = rentedFloorService.getTenantRentedFloors();
+        return ResponseEntity.ok(rentedFloors);
+    }
+
 
     @GetMapping("/tenant")
     public ResponseEntity<?> getTenants() {

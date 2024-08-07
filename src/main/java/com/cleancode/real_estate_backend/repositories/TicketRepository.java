@@ -43,4 +43,6 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
                     "WHERE r.id = :representantId)")
     Long countTicketsByRepresentantId(Long representantId);
 
+
+
 }
