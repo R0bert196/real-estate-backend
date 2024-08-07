@@ -25,9 +25,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfiguration {
 
-//    private final JwtAuthenticationFilter jwtAuthFiler;
-//    private final AuthenticationProvider authenticationProvider;
-//    private final LogoutHandler logoutHandler;
+    private final JwtAuthenticationFilter jwtAuthFiler;
+    private final AuthenticationProvider authenticationProvider;
+    private final LogoutHandler logoutHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -36,21 +36,21 @@ public class SecurityConfiguration {
             .cors(httpSecurityCorsConfigurer -> corsConfigurationSource())
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                  .requestMatchers("/**").permitAll()
-//                    .requestMatchers("/api/auth/**").permitAll()
+//                  .requestMatchers("/**").permitAll()
+                    .requestMatchers("/api/auth/**").permitAll()
 //                    .requestMatchers("/api/user/**").hasRole("USER")
-//                    .anyRequest().authenticated()
+                    .anyRequest().authenticated()
             )
-            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-//                .authenticationProvider(authenticationProvider)
-//                .addFilterAfter(jwtAuthFiler, UsernamePasswordAuthenticationFilter.class)
-//                .logout(logout -> logout
-//                        .addLogoutHandler(logoutHandler)
-//                        .logoutUrl("/api/auth/logout")
-//                        .logoutSuccessHandler((request, response, authentication) -> {
-//                            SecurityContextHolder.clearContext();
-//                        })
-//                );
+            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider)
+                .addFilterAfter(jwtAuthFiler, UsernamePasswordAuthenticationFilter.class)
+                .logout(logout -> logout
+                        .addLogoutHandler(logoutHandler)
+                        .logoutUrl("/api/auth/logout")
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            SecurityContextHolder.clearContext();
+                        })
+                );
         return http.build();
     }
 

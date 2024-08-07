@@ -21,12 +21,16 @@ public class Tenant {
     private Long id;
 
     private String name;
-    private String phoneNumber;
 
-//    @ManyToMany(mappedBy = "tenants", fetch = FetchType.LAZY)
-//    private Set<Building> buildings = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<RentedFloor> rentedFloors = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "tenantRepresentant", orphanRemoval = true)
+    private Set<AppUser> representants = new LinkedHashSet<>();
+
+    @ManyToOne
+    @JoinColumn(name = "manager_id")
+    private AppUser manager;
 
 }

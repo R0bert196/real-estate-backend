@@ -26,4 +26,8 @@ public class Building {
     @OneToMany(mappedBy = "building", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Floor> floors = new LinkedHashSet<>();
 
+    @OneToOne(optional = false)
+    @JoinColumn(name = "manager_id", nullable = false)
+    private AppUser manager;
+
 }

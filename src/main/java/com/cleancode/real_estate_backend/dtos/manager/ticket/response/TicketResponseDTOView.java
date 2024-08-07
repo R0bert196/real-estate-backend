@@ -1,4 +1,4 @@
-package com.cleancode.real_estate_backend.dtos.administrator.ticket.response;
+package com.cleancode.real_estate_backend.dtos.manager.ticket.response;
 
 public record TicketResponseDTOView(
         Long id,
