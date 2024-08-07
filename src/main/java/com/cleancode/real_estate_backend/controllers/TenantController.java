@@ -11,7 +11,7 @@ import com.cleancode.real_estate_backend.services.RentedFloorService;
 import com.cleancode.real_estate_backend.services.TenantService;
 import com.cleancode.real_estate_backend.services.TicketService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -25,7 +25,7 @@ import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
-@Slf4j
+@Log4j2
 @RequestMapping("/api/tenant")
 public class TenantController {
 
@@ -36,36 +36,35 @@ public class TenantController {
 
     @GetMapping("/rented-floors")
     public ResponseEntity<?> getRentedFloors() {
-
-
+        log.info("Fetching rented floors for tenant");
         List<RentedFloorResponseDTO> rentedFloors = rentedFloorService.getTenantRentedFloors();
         return ResponseEntity.ok(rentedFloors);
     }
 
     @GetMapping("/ticket")
     public ResponseEntity<?> getTickets(
-            @RequestParam (name = "pageNumber", required = true) Integer pageNumber,
-            @RequestParam (name = "numberOfItems", required = true) Integer numberOfItems
-    ) {
-        Pageable pageable= PageRequest.of(pageNumber, numberOfItems);
+            @RequestParam(name = "pageNumber") Integer pageNumber,
+            @RequestParam(name = "numberOfItems") Integer numberOfItems) {
+        log.info("Fetching tickets for tenant with pageNumber={}, numberOfItems={}", pageNumber, numberOfItems);
+        Pageable pageable = PageRequest.of(pageNumber, numberOfItems);
         List<TicketResponseDTOView> ticketResponseDTOViews = ticketService.getTicketsViewTenant(pageable);
         return ResponseEntity.ok(ticketResponseDTOViews);
     }
 
     @GetMapping("/ticket/{ticketId}")
     public ResponseEntity<?> getTicket(@PathVariable(value = "ticketId") Long ticketId) {
-
+        log.info("Fetching ticket with ID={}", ticketId);
         TicketResponseDTO dto = ticketService.getTicket(ticketId);
         return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/ticket/count")
-    public ResponseEntity<?> countTickets(){
-        return ResponseEntity.ok(ticketService.countTickets()) ;
+    public ResponseEntity<?> countTickets() {
+        log.info("Counting tickets for tenant");
+        return ResponseEntity.ok(ticketService.countTickets());
     }
 
-
-    @PostMapping(path = "/ticket",  consumes = "multipart/form-data")
+    @PostMapping(path = "/ticket", consumes = "multipart/form-data")
     public ResponseEntity<TicketResponseDTOLite> createTicket(
             @RequestParam("subject") String subject,
             @RequestParam("message") String message,
@@ -74,62 +73,51 @@ public class TenantController {
             @RequestParam("rentedFloorId") Long rentedFloorId,
             @RequestParam(value = "images", required = false) MultipartFile[] images) {
 
-        TicketRequestDTO ticketRequestDTO = new TicketRequestDTO(subject, message, severity, department, rentedFloorId);
+        log.info("Creating a new ticket for subject={}, department={}, severity={}", subject, department, severity);
 
+        TicketRequestDTO ticketRequestDTO = new TicketRequestDTO(subject, message, severity, department, rentedFloorId);
         TicketResponseDTOLite ticketDto = ticketService.addTicket(ticketRequestDTO);
 
-        if (saveImages(images, ticketDto)) return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        if (saveImages(images, ticketDto)) {
+            log.error("Error saving images for ticket with ID={}", ticketDto.id());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        log.info("Ticket created successfully with ID={}", ticketDto.id());
         return new ResponseEntity<>(ticketDto, HttpStatus.CREATED);
     }
 
-
-    //TODO: refactor, same code on administrator controller
     @PostMapping("/ticket/{ticketId}/message")
     public ResponseEntity<?> addMessageToTicket(
             @PathVariable(value = "ticketId") Long ticketId,
             @RequestParam("message") String message,
-            @RequestParam(value = "images", required = false) MultipartFile[] images
-    ) {
+            @RequestParam(value = "images", required = false) MultipartFile[] images) {
 
+        log.info("Adding message to ticket with ID={}", ticketId);
         TicketMessageRequestDTO requestDTO = new TicketMessageRequestDTO(message);
-
         TicketResponseDTOLite ticketDto = ticketService.addMessageToTicket(ticketId, requestDTO);
 
-        if (saveImages(images, ticketDto)) return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        if (saveImages(images, ticketDto)) {
+            log.error("Error saving images for ticket message with ID={}", ticketDto.ticketMessageId());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        log.info("Message added to ticket with ID={}", ticketId);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    //TODO: refactor, same code on administrator controller
     private boolean saveImages(@RequestParam(value = "images", required = false) MultipartFile[] images, TicketResponseDTOLite ticketDto) {
         if (images == null) {
             return false;
         }
 
         try {
-
-            // save the images to the disk
             Set<String> imageUrls = photoService.savePhotos(ticketDto.ticketMessageId(), images);
-
-            // save the path to the image into the ticket message
             ticketService.addPhotosUrlsToMessage(ticketDto.ticketMessageId(), imageUrls);
         } catch (IOException e) {
-            log.error(e.toString());
+            log.error("Error saving images for ticket message with ID={}: {}", ticketDto.ticketMessageId(), e.getMessage());
             return true;
         }
         return false;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
