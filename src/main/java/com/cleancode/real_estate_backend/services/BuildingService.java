@@ -26,54 +26,65 @@ import java.util.stream.Collectors;
 @Slf4j
 public class BuildingService {
     private final AppUserRepository appUserRepository;
-
     private final BuildingRepository buildingRepository;
     private final FloorService floorService;
     private final IAuthenticationFacade authenticationFacade;
 
     public BuildingResponseDTOLite addBuilding(BuildingRequestDTO buildingRequestDTO) {
-
         try {
+            log.info("Adding a new building: {}", buildingRequestDTO.buildingName());
 
-            AppUser user = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
-
+            AppUser user = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName())
+                    .orElseThrow(() -> {
+                        log.error("User not found for email: {}", authenticationFacade.getAuthentication().getName());
+                        return new EntityNotFoundException("User not found");
+                    });
 
             Building building = convertToEntity(buildingRequestDTO, user);
-
             Building savedBuilding = buildingRepository.save(building);
             Set<Floor> savedFloors = savedBuilding.getFloors();
 
-            return new BuildingResponseDTOLite(building.getName(), savedFloors.size(), savedFloors.stream().mapToDouble(Floor::getSize).sum(), building.getId());
+            log.info("Building added successfully: {}", savedBuilding.getId());
+
+            return new BuildingResponseDTOLite(
+                    savedBuilding.getName(),
+                    savedFloors.size(),
+                    savedFloors.stream().mapToDouble(Floor::getSize).sum(),
+                    savedBuilding.getId()
+            );
         } catch (IllegalArgumentException e) {
-
             log.error("Error while adding building: {}", e.getMessage());
-
             throw new IllegalArgumentException("Error while adding building", e);
         }
     }
 
     public BuildingResponseDTOLite updateBuilding(Long buildingId, BuildingRequestDTO buildingRequestDTO) {
         try {
+            log.info("Updating building with ID: {}", buildingId);
 
             Optional<Building> buildingOpt = buildingRepository.findWithManagerAndFloorsById(buildingId);
-
             if (buildingOpt.isEmpty()) {
+                log.error("Building not found with ID: {}", buildingId);
                 throw new IllegalArgumentException("Building not found");
             }
 
-
-            AppUser loggedInUser = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
-
+            AppUser loggedInUser = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName())
+                    .orElseThrow(() -> {
+                        log.error("User not found for email: {}", authenticationFacade.getAuthentication().getName());
+                        return new EntityNotFoundException("User not found");
+                    });
 
             Building building = buildingOpt.get();
-
             if (!building.getManager().equals(loggedInUser)) {
+                log.error("Unauthorized update attempt by user: {}", loggedInUser.getEmail());
                 throw new IllegalArgumentException("Only the building manager can make changes");
             }
 
+            // Update building details
             building.setName(buildingRequestDTO.buildingName());
             building.setAddress(buildingRequestDTO.address());
 
+            log.debug("Updating floors for building with ID: {}", buildingId);
             Set<Long> requestFloorIds = buildingRequestDTO.floors().stream()
                     .map(FloorRequestDTO::id)
                     .collect(Collectors.toSet());
@@ -90,23 +101,16 @@ public class BuildingService {
             existingFloors.removeAll(floorsToRemove);
 
             for (FloorRequestDTO floorRequestDTO : buildingRequestDTO.floors()) {
-
                 Optional<Floor> existingFloorOpt = existingFloors.stream()
                         .filter(floor -> floor.getId().equals(floorRequestDTO.id()))
                         .findFirst();
 
                 if (existingFloorOpt.isPresent()) {
-
-                    // Update existing floor
                     Floor floor = existingFloorOpt.get();
-
                     floor.setSize(Double.parseDouble(floorRequestDTO.size()));
                     floor.setFloorNumber(Integer.parseInt(floorRequestDTO.number()));
                 } else {
-
-                    // Add new floor
                     Floor newFloor = new Floor();
-
                     newFloor.setSize(Double.parseDouble(floorRequestDTO.size()));
                     newFloor.setFloorNumber(Integer.parseInt(floorRequestDTO.number()));
                     newFloor.setBuilding(building);
@@ -115,15 +119,17 @@ public class BuildingService {
             }
 
             building.setFloors(existingFloors);
-
             Building savedBuilding = buildingRepository.save(building);
             Set<Floor> savedFloors = savedBuilding.getFloors();
 
-            return new BuildingResponseDTOLite(savedBuilding.getName(),
+            log.info("Building updated successfully: {}", savedBuilding.getId());
+
+            return new BuildingResponseDTOLite(
+                    savedBuilding.getName(),
                     savedFloors.size(),
                     savedFloors.stream().mapToDouble(Floor::getSize).sum(),
-                    savedBuilding.getId());
-
+                    savedBuilding.getId()
+            );
         } catch (IllegalArgumentException e) {
             log.error("Error while updating building: {}", e.getMessage());
             throw new IllegalArgumentException("Error while updating building", e);
@@ -131,44 +137,51 @@ public class BuildingService {
     }
 
     private Building convertToEntity(BuildingRequestDTO dto, AppUser user) {
-
+        log.debug("Converting BuildingRequestDTO to Building entity for building name: {}", dto.buildingName());
 
         Building building = Building.builder()
                 .name(dto.buildingName())
                 .address(dto.address())
                 .manager(user)
                 .build();
-        Set<Floor> floors = dto.floors().stream().map(this::convertToEntity).collect(Collectors.toSet());
 
-        // set floors to building
+        Set<Floor> floors = dto.floors().stream()
+                .map(this::convertToEntity)
+                .collect(Collectors.toSet());
+
         building.setFloors(floors);
-
-        //set building to floors
         floors.forEach(floor -> floor.setBuilding(building));
+
+        log.debug("Converted BuildingRequestDTO to Building entity with {} floors", floors.size());
 
         return building;
     }
 
     public BuildingResponseDTOLite convertToDTOLite(Building entity) {
+        log.debug("Converting Building entity to BuildingResponseDTOLite for building ID: {}", entity.getId());
 
         return new BuildingResponseDTOLite(
                 entity.getName(),
                 entity.getFloors().size(),
                 entity.getFloors().stream().mapToDouble(Floor::getSize).sum(),
-                entity.getId());
+                entity.getId()
+        );
     }
 
     public BuildingResponseDTO convertToDTO(Building entity) {
+        log.debug("Converting Building entity to BuildingResponseDTO for building ID: {}", entity.getId());
 
         return new BuildingResponseDTO(
                 entity.getName(),
                 entity.getFloors().stream().map(floorService::convertToDTOLite).toList(),
                 entity.getFloors().stream().mapToDouble(Floor::getSize).sum(),
                 entity.getAddress(),
-                entity.getId());
+                entity.getId()
+        );
     }
 
     private Floor convertToEntity(FloorRequestDTO dto) {
+        log.debug("Converting FloorRequestDTO to Floor entity for floor number: {}", dto.number());
 
         return Floor.builder()
                 .floorNumber(Integer.valueOf(dto.number()))
@@ -177,29 +190,50 @@ public class BuildingService {
     }
 
     public List<BuildingResponseDTO> getBuildings(String email) {
+        log.info("Fetching buildings for user email: {}", email);
 
-        AppUser user = appUserRepository.findByEmail(email).orElseThrow(EntityNotFoundException::new);
+        AppUser user = appUserRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    log.error("User not found for email: {}", email);
+                    return new EntityNotFoundException("User not found");
+                });
 
-        return buildingRepository.findAllWithFloorsByManagerId(user.getId()).stream().map(this::convertToDTO).toList();
-//        return buildingRepository.findAll().stream().map(this::convertToDTO).toList();
+        List<BuildingResponseDTO> buildings = buildingRepository.findAllWithFloorsByManagerId(user.getId()).stream()
+                .map(this::convertToDTO)
+                .toList();
+
+        log.info("Fetched {} buildings for user email: {}", buildings.size(), email);
+
+        return buildings;
     }
 
     public void deleteBuilding(Long buildingId) {
-
         try {
-            AppUser appUser = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName()).orElseThrow(EntityNotFoundException::new);
+            log.info("Deleting building with ID: {}", buildingId);
 
-            Building building = buildingRepository.findByIdWithManager(buildingId).orElseThrow(EntityNotFoundException::new);
+            AppUser appUser = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName())
+                    .orElseThrow(() -> {
+                        log.error("User not found for email: {}", authenticationFacade.getAuthentication().getName());
+                        return new EntityNotFoundException("User not found");
+                    });
+
+            Building building = buildingRepository.findByIdWithManager(buildingId)
+                    .orElseThrow(() -> {
+                        log.error("Building not found with ID: {}", buildingId);
+                        return new EntityNotFoundException("Building not found");
+                    });
 
             if (!building.getManager().equals(appUser)) {
+                log.error("Unauthorized deletion attempt by user: {}", appUser.getEmail());
                 throw new IllegalArgumentException("Only the building manager can delete the building");
             }
 
             buildingRepository.deleteById(buildingId);
 
+            log.info("Building deleted successfully with ID: {}", buildingId);
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Building id is null");
+            log.error("Error while deleting building: {}", e.getMessage());
+            throw new RuntimeException("Building id is null", e);
         }
     }
-
 }
