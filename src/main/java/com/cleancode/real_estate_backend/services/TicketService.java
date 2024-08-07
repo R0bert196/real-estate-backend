@@ -1,6 +1,6 @@
 package com.cleancode.real_estate_backend.services;
 
-import com.cleancode.real_estate_backend.dtos.administrator.ticket.response.TicketResponseDTOView;
+import com.cleancode.real_estate_backend.dtos.manager.ticket.response.TicketResponseDTOView;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketMessageRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketUpdateRequestDTO;
@@ -25,7 +25,6 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 

@@ -1,6 +1,6 @@
 package com.cleancode.real_estate_backend.services;
 
-import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.RentedFloorResponseDTO;
+import com.cleancode.real_estate_backend.dtos.manager.tenants.response.RentedFloorResponseDTO;
 import com.cleancode.real_estate_backend.entities.AppUser;
 import com.cleancode.real_estate_backend.entities.RentedFloor;
 import com.cleancode.real_estate_backend.enums.Role;
@@ -10,7 +10,6 @@ import com.cleancode.real_estate_backend.utils.IAuthenticationFacade;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

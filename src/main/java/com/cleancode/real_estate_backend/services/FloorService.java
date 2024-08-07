@@ -1,14 +1,13 @@
 package com.cleancode.real_estate_backend.services;
 
-import com.cleancode.real_estate_backend.dtos.administrator.building.response.BuildingResponseDTOLite;
-import com.cleancode.real_estate_backend.dtos.administrator.building.response.FloorResponseDTO;
-import com.cleancode.real_estate_backend.dtos.administrator.building.response.FloorResponseDTOLite;
+import com.cleancode.real_estate_backend.dtos.manager.building.response.BuildingResponseDTOLite;
+import com.cleancode.real_estate_backend.dtos.manager.building.response.FloorResponseDTO;
+import com.cleancode.real_estate_backend.dtos.manager.building.response.FloorResponseDTOLite;
 import com.cleancode.real_estate_backend.entities.Building;
 import com.cleancode.real_estate_backend.entities.Floor;
 import com.cleancode.real_estate_backend.repositories.FloorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service

@@ -1,7 +1,7 @@
 package com.cleancode.real_estate_backend.controllers;
 
-import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.RentedFloorResponseDTO;
-import com.cleancode.real_estate_backend.dtos.administrator.ticket.response.TicketResponseDTOView;
+import com.cleancode.real_estate_backend.dtos.manager.tenants.response.RentedFloorResponseDTO;
+import com.cleancode.real_estate_backend.dtos.manager.ticket.response.TicketResponseDTOView;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketMessageRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTO;

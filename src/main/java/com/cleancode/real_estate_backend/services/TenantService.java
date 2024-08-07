@@ -1,8 +1,8 @@
 package com.cleancode.real_estate_backend.services;
 
-import com.cleancode.real_estate_backend.dtos.administrator.tenants.request.TenantRequestDTO;
-import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTO;
-import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTOLite;
+import com.cleancode.real_estate_backend.dtos.manager.tenants.request.TenantRequestDTO;
+import com.cleancode.real_estate_backend.dtos.manager.tenants.response.TenantResponseDTO;
+import com.cleancode.real_estate_backend.dtos.manager.tenants.response.TenantResponseDTOLite;
 import com.cleancode.real_estate_backend.entities.*;
 import com.cleancode.real_estate_backend.repositories.*;
 import com.cleancode.real_estate_backend.utils.IAuthenticationFacade;

@@ -1,13 +1,13 @@
 package com.cleancode.real_estate_backend.controllers;
 
-import com.cleancode.real_estate_backend.dtos.administrator.building.request.BuildingRequestDTO;
-import com.cleancode.real_estate_backend.dtos.administrator.building.response.BuildingResponseDTO;
-import com.cleancode.real_estate_backend.dtos.administrator.building.response.BuildingResponseDTOLite;
-import com.cleancode.real_estate_backend.dtos.administrator.tenants.request.TenantRequestDTO;
-import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.RentedFloorResponseDTO;
-import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTO;
-import com.cleancode.real_estate_backend.dtos.administrator.tenants.response.TenantResponseDTOLite;
-import com.cleancode.real_estate_backend.dtos.administrator.ticket.response.TicketResponseDTOView;
+import com.cleancode.real_estate_backend.dtos.manager.building.request.BuildingRequestDTO;
+import com.cleancode.real_estate_backend.dtos.manager.building.response.BuildingResponseDTO;
+import com.cleancode.real_estate_backend.dtos.manager.building.response.BuildingResponseDTOLite;
+import com.cleancode.real_estate_backend.dtos.manager.tenants.request.TenantRequestDTO;
+import com.cleancode.real_estate_backend.dtos.manager.tenants.response.RentedFloorResponseDTO;
+import com.cleancode.real_estate_backend.dtos.manager.tenants.response.TenantResponseDTO;
+import com.cleancode.real_estate_backend.dtos.manager.tenants.response.TenantResponseDTOLite;
+import com.cleancode.real_estate_backend.dtos.manager.ticket.response.TicketResponseDTOView;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketMessageRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketUpdateRequestDTO;
@@ -31,9 +31,9 @@ import java.util.Set;
 
 @RestController
 @Log4j2
-@RequestMapping("/api/administrator")
+@RequestMapping("/api/manager")
 @RequiredArgsConstructor
-public class AdministratorController {
+public class ManagerController {
 
     private final BuildingService buildingService;
     private final TenantService tenantService;

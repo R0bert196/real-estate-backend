@@ -49,22 +49,6 @@ public class AuthenticationController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/register-creator")
-    public ResponseEntity<?> registerCreator(
-            @RequestBody RegisterRequest request,
-            HttpServletRequest httpServletRequest
-    ) {
-        log.info("Register creator request received: {}", request);
-
-        try {
-            service.register(request, httpServletRequest, Role.ROLE_CREATOR);
-            log.info("User registered successfully with role CREATOR: {}", request.getEmail());
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            log.error("Exception occurred while creating new user: {}", request.getEmail(), e);
-            return ResponseEntity.badRequest().build();
-        }
-    }
 
     @PostMapping("/verify")
     public ResponseEntity<?> verifyUser(@RequestBody VerificationCode code) {

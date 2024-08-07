@@ -1,6 +1,6 @@
-package com.cleancode.real_estate_backend.dtos.administrator.tenants.response;
+package com.cleancode.real_estate_backend.dtos.manager.tenants.response;
 
-import com.cleancode.real_estate_backend.dtos.administrator.building.response.FloorResponseDTO;
+import com.cleancode.real_estate_backend.dtos.manager.building.response.FloorResponseDTO;
 
 public record RentedFloorResponseDTO(Long id,
                                      Double rentedSize,
