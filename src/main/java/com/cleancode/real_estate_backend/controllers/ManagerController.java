@@ -13,9 +13,11 @@ import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketReques
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketUpdateRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTOLite;
+import com.cleancode.real_estate_backend.dtos.user.AppUserRepresentantRequestDTO;
 import com.cleancode.real_estate_backend.dtos.user.AppUserResponseDTOLite;
 import com.cleancode.real_estate_backend.services.*;
 import com.cleancode.real_estate_backend.utils.IAuthenticationFacade;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.PageRequest;
@@ -154,13 +156,26 @@ public class ManagerController {
 
 
     @GetMapping("/tenant/{id}/representants")
-    public ResponseEntity<?> getTenantRepresentants(@PathVariable Long id) {
+    public ResponseEntity<?> getTenantRepresentatives(@PathVariable Long id) {
         log.info("Request to fetch the representants of the tenant with id {} received.", id);
 
         List<AppUserResponseDTOLite> tenantRepresentants = appUserService.getTenantRepresentants(id);
 
         log.info("Returning a list of {} representants", tenantRepresentants.size());
         return ResponseEntity.ok(tenantRepresentants);
+    }
+
+
+    @PostMapping("/tenant/{id}/representants")
+    public ResponseEntity<?> addTenantRepresentative(@PathVariable Long id,
+                                                     @RequestBody AppUserRepresentantRequestDTO representantRequestDTO,
+                                                     HttpServletRequest httpServletRequest) {
+        log.info("Request to fetch the representatives of the tenant with id {} received.", id);
+
+        AppUserResponseDTOLite representative = appUserService.addTenantRepresentative(id, representantRequestDTO, httpServletRequest);
+
+        log.info("Returning the created representative with the id: {}", representative.id());
+        return ResponseEntity.ok(representative);
     }
 
 

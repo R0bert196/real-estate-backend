@@ -1,31 +1,35 @@
 package com.cleancode.real_estate_backend.services;
 
-import com.cleancode.real_estate_backend.dtos.manager.tenants.response.TenantResponseDTO;
+import com.cleancode.real_estate_backend.dtos.kafka.EmailDTO;
+import com.cleancode.real_estate_backend.dtos.kafka.KafkaMessage;
+import com.cleancode.real_estate_backend.dtos.user.AppUserRepresentantRequestDTO;
 import com.cleancode.real_estate_backend.dtos.user.AppUserResponseDTOLite;
 import com.cleancode.real_estate_backend.entities.AppUser;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.cleancode.real_estate_backend.entities.Tenant;
+import com.cleancode.real_estate_backend.repositories.TenantRepository;
 import com.cleancode.real_estate_backend.repositories.AppUserRepository;
+import com.cleancode.real_estate_backend.utils.EmailComposer;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Service
+@Log4j2
 @RequiredArgsConstructor
 public class AppUserService {
 
     private final AppUserRepository appUserRepository;
+    private final TenantRepository tenantRepository;
 
-    @Autowired
-    ObjectMapper objectMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final KafkaTemplate<String, KafkaMessage> kafkaTemplate;
 
     public AppUserResponseDTOLite convertToDto(AppUser appUser) {
         if (appUser == null) {
@@ -47,5 +51,33 @@ public class AppUserService {
 
         return representants.stream().map(this::convertToDto).toList();
     }
+
+    public AppUserResponseDTOLite addTenantRepresentative(Long tenantId, AppUserRepresentantRequestDTO representativeRequestDTO, HttpServletRequest httpServletRequest) {
+
+        Tenant tenant = tenantRepository.findById(tenantId).orElseThrow(() -> {
+            log.error("Tenant not found for id: {}", tenantId);
+            return new EntityNotFoundException("Tenant not found");
+        });
+
+        String generatedPassword = RandomStringUtils.random(10, true, true);
+
+        AppUser representative = AppUser.builder()
+                .name(representativeRequestDTO.name())
+                .email(representativeRequestDTO.email())
+                .phoneNumber(representativeRequestDTO.phoneNumber())
+                .password(passwordEncoder.encode(generatedPassword))
+                .build();
+
+        AppUser savedUser = appUserRepository.save(representative);
+
+        KafkaMessage kafkaMessage = EmailComposer.createRepresentativeAccountConfirmationEmail(representative, tenant.getName(), generatedPassword, httpServletRequest);
+
+        kafkaTemplate.send("mail", kafkaMessage);
+
+        return new AppUserResponseDTOLite(savedUser.getId(), savedUser.getEmail(), savedUser.getName(), savedUser.getPhoneNumber());
+
+    }
+
+
 
 }
