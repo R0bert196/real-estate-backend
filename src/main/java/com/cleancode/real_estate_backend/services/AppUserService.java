@@ -6,6 +6,7 @@ import com.cleancode.real_estate_backend.dtos.user.AppUserRepresentantRequestDTO
 import com.cleancode.real_estate_backend.dtos.user.AppUserResponseDTOLite;
 import com.cleancode.real_estate_backend.entities.AppUser;
 import com.cleancode.real_estate_backend.entities.Tenant;
+import com.cleancode.real_estate_backend.enums.Role;
 import com.cleancode.real_estate_backend.repositories.TenantRepository;
 import com.cleancode.real_estate_backend.repositories.AppUserRepository;
 import com.cleancode.real_estate_backend.utils.EmailComposer;
@@ -18,6 +19,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -66,6 +69,8 @@ public class AppUserService {
                 .email(representativeRequestDTO.email())
                 .phoneNumber(representativeRequestDTO.phoneNumber())
                 .password(passwordEncoder.encode(generatedPassword))
+                .tenantRepresentant(tenant)
+                .role(new HashSet<>(Collections.singleton(Role.ROLE_REPRESENTANT)))
                 .build();
 
         AppUser savedUser = appUserRepository.save(representative);
