@@ -1,5 +1,8 @@
 package com.cleancode.real_estate_backend.services;
 
+import com.cleancode.real_estate_backend.dtos.manager.tenants.response.TenantResponseDTO;
+import com.cleancode.real_estate_backend.dtos.user.AppUserResponseDTOLite;
+import com.cleancode.real_estate_backend.entities.AppUser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.cleancode.real_estate_backend.repositories.AppUserRepository;
@@ -24,5 +27,25 @@ public class AppUserService {
     @Autowired
     ObjectMapper objectMapper;
 
+    public AppUserResponseDTOLite convertToDto(AppUser appUser) {
+        if (appUser == null) {
+            throw new EntityNotFoundException("User not found");
+        }
+
+        return new AppUserResponseDTOLite(
+                appUser.getId(),
+                appUser.getEmail(),
+                appUser.getName(),
+                appUser.getPhoneNumber()
+        );
+    }
+
+
+    public List<AppUserResponseDTOLite> getTenantRepresentants(Long tenantId) {
+
+        List<AppUser> representants = appUserRepository.findTicketTenantRepresentatnsByTenantId(tenantId);
+
+        return representants.stream().map(this::convertToDto).toList();
+    }
 
 }

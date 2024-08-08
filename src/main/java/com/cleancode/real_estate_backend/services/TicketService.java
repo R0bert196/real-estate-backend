@@ -188,7 +188,8 @@ public class TicketService {
             AppUserResponseDTOLite messageCreator = new AppUserResponseDTOLite(
                     ticketMessage.getCreator().getId(),
                     ticketMessage.getCreator().getEmail(),
-                    ticketMessage.getCreator().getName()
+                    ticketMessage.getCreator().getName(),
+                    ticket.getCreator().getPhoneNumber()
             );
 
             TicketMessageResponseDTO ticketMessageResponseDTO = new TicketMessageResponseDTO(
@@ -205,7 +206,8 @@ public class TicketService {
         AppUserResponseDTOLite ticketCreator = new AppUserResponseDTOLite(
                 ticket.getCreator().getId(),
                 ticket.getCreator().getEmail(),
-                ticket.getCreator().getName()
+                ticket.getCreator().getName(),
+                ticket.getCreator().getPhoneNumber()
         );
 
         TicketResponseDTO ticketResponseDTO = new TicketResponseDTO(

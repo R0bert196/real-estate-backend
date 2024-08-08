@@ -23,4 +23,12 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
     )
     List<AppUser> findTicketTenantRepresentatns();
 
+    @Query(
+            "SELECT DISTINCT r FROM Ticket t " +
+                    "JOIN t.rentedFloor.tenant tenant " +
+                    "JOIN tenant.representants r " +
+                    "WHERE tenant.id = :tenantId"
+    )
+    List<AppUser> findTicketTenantRepresentatnsByTenantId(Long tenantId);
+
 }

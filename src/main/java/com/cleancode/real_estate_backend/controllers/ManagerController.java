@@ -13,6 +13,7 @@ import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketReques
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketUpdateRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTOLite;
+import com.cleancode.real_estate_backend.dtos.user.AppUserResponseDTOLite;
 import com.cleancode.real_estate_backend.services.*;
 import com.cleancode.real_estate_backend.utils.IAuthenticationFacade;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,7 @@ public class ManagerController {
     private final PhotoService photoService;
     private final IAuthenticationFacade authenticationFacade;
     private final RentedFloorService rentedFloorService;
+    private final AppUserService appUserService;
 
     @GetMapping("/building")
     public ResponseEntity<?> getBuildings() {
@@ -149,6 +151,18 @@ public class ManagerController {
         log.info("Returning tenant: {}", tenant.name());
         return ResponseEntity.ok(tenant);
     }
+
+
+    @GetMapping("/tenant/{id}/representants")
+    public ResponseEntity<?> getTenantRepresentants(@PathVariable Long id) {
+        log.info("Request to fetch the representants of the tenant with id {} received.", id);
+
+        List<AppUserResponseDTOLite> tenantRepresentants = appUserService.getTenantRepresentants(id);
+
+        log.info("Returning a list of {} representants", tenantRepresentants.size());
+        return ResponseEntity.ok(tenantRepresentants);
+    }
+
 
     @GetMapping("/ticket")
     public ResponseEntity<?> getTickets(
