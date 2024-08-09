@@ -1,8 +1,7 @@
 package com.cleancode.real_estate_backend.services;
 
-import com.cleancode.real_estate_backend.dtos.kafka.EmailDTO;
 import com.cleancode.real_estate_backend.dtos.kafka.KafkaMessage;
-import com.cleancode.real_estate_backend.dtos.user.AppUserRepresentantRequestDTO;
+import com.cleancode.real_estate_backend.dtos.user.AppUserRepresentativeRequestDTO;
 import com.cleancode.real_estate_backend.dtos.user.AppUserResponseDTOLite;
 import com.cleancode.real_estate_backend.entities.AppUser;
 import com.cleancode.real_estate_backend.entities.Tenant;
@@ -55,7 +54,7 @@ public class AppUserService {
         return representants.stream().map(this::convertToDto).toList();
     }
 
-    public AppUserResponseDTOLite addTenantRepresentative(Long tenantId, AppUserRepresentantRequestDTO representativeRequestDTO, HttpServletRequest httpServletRequest) {
+    public AppUserResponseDTOLite addTenantRepresentative(Long tenantId, AppUserRepresentativeRequestDTO representativeRequestDTO, HttpServletRequest httpServletRequest) {
 
         Tenant tenant = tenantRepository.findById(tenantId).orElseThrow(() -> {
             log.error("Tenant not found for id: {}", tenantId);
@@ -84,5 +83,30 @@ public class AppUserService {
     }
 
 
+    public void editTenantRepresentative(Long tenantId, Long representativeId, AppUserRepresentativeRequestDTO representativeRequestDTO) {
 
+        Tenant tenant = tenantRepository.findById(tenantId).orElseThrow(() -> {
+            log.error("Tenant not found for id: {}", tenantId);
+            return new EntityNotFoundException("Tenant not found");
+        });
+
+        AppUser representative = appUserRepository.findById(representativeId).orElseThrow(() -> {
+            log.error("Representative not found for id: {}", representativeId);
+            return new EntityNotFoundException("Tenant not found");
+        });
+
+        if (!representative.getName().equals(representativeRequestDTO.name())) {
+            representative.setName(representativeRequestDTO.name());
+        }
+        //TODO: send email verification again
+        if (!representative.getEmail().equals(representativeRequestDTO.email())) {
+            representative.setEmail(representativeRequestDTO.email());
+        }
+        if (!representative.getPhoneNumber().equals(representativeRequestDTO.phoneNumber())) {
+            representative.setPhoneNumber(representativeRequestDTO.phoneNumber());
+        }
+
+        appUserRepository.save(representative);
+
+    }
 }

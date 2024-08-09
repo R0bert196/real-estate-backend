@@ -13,7 +13,7 @@ import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketReques
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketUpdateRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.response.TicketResponseDTOLite;
-import com.cleancode.real_estate_backend.dtos.user.AppUserRepresentantRequestDTO;
+import com.cleancode.real_estate_backend.dtos.user.AppUserRepresentativeRequestDTO;
 import com.cleancode.real_estate_backend.dtos.user.AppUserResponseDTOLite;
 import com.cleancode.real_estate_backend.services.*;
 import com.cleancode.real_estate_backend.utils.IAuthenticationFacade;
@@ -155,7 +155,7 @@ public class ManagerController {
     }
 
 
-    @GetMapping("/tenant/{id}/representants")
+    @GetMapping("/tenant/{id}/representatives")
     public ResponseEntity<?> getTenantRepresentatives(@PathVariable Long id) {
         log.info("Request to fetch the representants of the tenant with id {} received.", id);
 
@@ -166,9 +166,9 @@ public class ManagerController {
     }
 
 
-    @PostMapping("/tenant/{id}/representants")
+    @PostMapping("/tenant/{id}/representatives")
     public ResponseEntity<?> addTenantRepresentative(@PathVariable Long id,
-                                                     @RequestBody AppUserRepresentantRequestDTO representantRequestDTO,
+                                                     @RequestBody AppUserRepresentativeRequestDTO representantRequestDTO,
                                                      HttpServletRequest httpServletRequest) {
         log.info("Request to fetch the representatives of the tenant with id {} received.", id);
 
@@ -176,6 +176,19 @@ public class ManagerController {
 
         log.info("Returning the created representative with the id: {}", representative.id());
         return ResponseEntity.ok(representative);
+    }
+
+
+    @PutMapping("/tenant/{id}/representatives/{representativeId}")
+    public ResponseEntity<?> editTenantRepresentative(@PathVariable Long id,
+                                                     @PathVariable Long representativeId,
+                                                     @RequestBody AppUserRepresentativeRequestDTO representativeRequestDTO) {
+        log.info("Request to fetch the representatives of the tenant with id {} received.", id);
+
+        appUserService.editTenantRepresentative(id, representativeId, representativeRequestDTO);
+
+        log.info("Successfully updated the representative");
+        return ResponseEntity.ok(null);
     }
 
 
