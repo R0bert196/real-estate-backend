@@ -39,7 +39,8 @@ public class RentedFloorService {
         return dto;
     }
 
-    public List<RentedFloorResponseDTO> getTenantRentedFloors() {
+    public List<RentedFloorResponseDTO> getTenantRentedFloorsRepresentative() {
+
         String userEmail = authenticationFacade.getAuthentication().getName();
         log.info("Fetching rented floors for user: {}", userEmail);
 
@@ -49,21 +50,30 @@ public class RentedFloorService {
                     return new EntityNotFoundException("User not found: " + userEmail);
                 });
 
-        if (loggedUser.getRole().stream().anyMatch(role -> role == Role.ROLE_MANAGER)) {
-            log.info("User is a manager. Fetching rented floors by manager ID: {}", loggedUser.getId());
-            return rentedFloorRepository.findAllWithFloorAndBuildingByManagerId(loggedUser.getId())
-                    .stream()
-                    .map(this::convertToDTO)
-                    .toList();
-        } else if (loggedUser.getRole().stream().anyMatch(role -> role == Role.ROLE_REPRESENTANT)) {
-            log.info("User is a representant. Fetching rented floors by representant ID: {}", loggedUser.getId());
-            return rentedFloorRepository.findAllWithFloorAndBuildingByRepresentantId(loggedUser.getId())
-                    .stream()
-                    .map(this::convertToDTO)
-                    .toList();
-        }
+            log.info("User is a representative. Fetching rented floors by representative ID: {}", loggedUser.getId());
 
-        log.error("User role not found for user: {}", userEmail);
-        throw new IllegalArgumentException("User role not found");
+            return rentedFloorRepository.findAllWithFloorAndBuildingByRepresentativeId(loggedUser.getId())
+                    .stream()
+                    .map(this::convertToDTO)
+                    .toList();
+    }
+
+
+    public List<RentedFloorResponseDTO> getTenantRentedFloorsManager(Long tenantId) {
+        String userEmail = authenticationFacade.getAuthentication().getName();
+        log.info("Fetching rented floors for user: {}", userEmail);
+
+        AppUser loggedUser = appUserRepository.findByEmail(userEmail)
+                .orElseThrow(() -> {
+                    log.error("User not found: {}", userEmail);
+                    return new EntityNotFoundException("User not found: " + userEmail);
+                });
+
+        log.info("User is a manager. Fetching rented floors by manager ID: {}", loggedUser.getId());
+        return rentedFloorRepository.findAllWithFloorAndBuildingByManagerIdAndTenantId(loggedUser.getId(), tenantId)
+                .stream()
+                .map(this::convertToDTO)
+                .toList();
+
     }
 }

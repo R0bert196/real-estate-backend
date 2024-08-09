@@ -19,7 +19,14 @@ public interface RentedFloorRepository extends JpaRepository<RentedFloor, Long> 
             "(SELECT t.id FROM Tenant t " +
             "JOIN t.representants r " +
             "WHERE r.id = :representantId)")
-    List<RentedFloor> findAllWithFloorAndBuildingByRepresentantId(Long representantId);
+    List<RentedFloor> findAllWithFloorAndBuildingByRepresentativeId(Long representantId);
+//
+//
+//    @Query("SELECT rf FROM RentedFloor rf "+
+//            "LEFT JOIN FETCH rf.floor f " +
+//            "LEFT JOIN FETCH f.building b " +
+//            "WHERE rf.tenant.id = :tenantId")
+//    List<RentedFloor> findAllWithFloorAndBuildingByTenantId(Long tenantId);
 
 
     @Query("SELECT rf FROM RentedFloor rf "+
@@ -27,4 +34,11 @@ public interface RentedFloorRepository extends JpaRepository<RentedFloor, Long> 
             "LEFT JOIN FETCH f.building b " +
             "WHERE f.building.manager.id = :managerId")
     List<RentedFloor>  findAllWithFloorAndBuildingByManagerId(Long managerId);
+
+    @Query("SELECT rf FROM RentedFloor rf "+
+            "LEFT JOIN FETCH rf.floor f " +
+            "LEFT JOIN FETCH f.building b " +
+            "WHERE f.building.manager.id = :managerId " +
+            "AND rf.tenant.id = :tenantId")
+    List<RentedFloor> findAllWithFloorAndBuildingByManagerIdAndTenantId(Long managerId, Long tenantId);
 }

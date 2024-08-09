@@ -20,7 +20,7 @@ public class RentedFloor {
     private Double squareMeterPrice;
     private Double maintenanceSquareMeterPrice;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "tenant_id", nullable = false)
     private Tenant tenant;
 

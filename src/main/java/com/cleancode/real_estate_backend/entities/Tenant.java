@@ -26,7 +26,7 @@ public class Tenant {
     @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<RentedFloor> rentedFloors = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "tenantRepresentant", orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "tenantRepresentant", orphanRemoval = true, fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private Set<AppUser> representants = new LinkedHashSet<>();
 
     @ManyToOne

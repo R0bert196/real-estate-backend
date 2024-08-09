@@ -93,11 +93,14 @@ public class ManagerController {
         return ResponseEntity.ok(null);
     }
 
-    @GetMapping("/rented-floors")
-    public ResponseEntity<?> getRentedFloors() {
-        log.info("Request to fetch rented floors received.");
 
-        List<RentedFloorResponseDTO> rentedFloors = rentedFloorService.getTenantRentedFloors();
+    @GetMapping("/{tenantId}/rented-floors")
+    public ResponseEntity<?> getRentedFloors(
+            @PathVariable(value = "tenantId") Long tenantId
+    ) {
+        log.info("Request to fetch rented floors received for tenant with id: {}.", tenantId);
+
+        List<RentedFloorResponseDTO> rentedFloors = rentedFloorService.getTenantRentedFloorsManager(tenantId);
 
         log.info("Returning {} rented floors.", rentedFloors.size());
         return ResponseEntity.ok(rentedFloors);

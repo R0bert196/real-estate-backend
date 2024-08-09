@@ -5,6 +5,7 @@ import com.cleancode.real_estate_backend.dtos.manager.tenants.response.TenantRes
 import com.cleancode.real_estate_backend.dtos.manager.tenants.response.TenantResponseDTOLite;
 import com.cleancode.real_estate_backend.dtos.manager.tenants.response.TenantResponseDTOView;
 import com.cleancode.real_estate_backend.entities.*;
+import com.cleancode.real_estate_backend.enums.Role;
 import com.cleancode.real_estate_backend.repositories.*;
 import com.cleancode.real_estate_backend.utils.IAuthenticationFacade;
 import jakarta.persistence.EntityNotFoundException;
@@ -32,6 +33,7 @@ public class TenantService {
     private final RentedFloorRepository rentedFloorRepository;
     private final RentedFloorService rentedFloorService;
     private final IAuthenticationFacade authenticationFacade;
+    private final TicketRepository ticketRepository;
 
     public List<TenantResponseDTOView> getTenantsView() {
         log.info("Fetching the authenticated user.");
@@ -164,7 +166,24 @@ public class TenantService {
                 throw new IllegalArgumentException("Only the tenant's manager can delete the tenant");
             }
 
-            tenantRepository.deleteById(tenantId);
+
+            //find and delete the tickets of the tenant
+            tenant.getRentedFloors().stream()
+                    .map(RentedFloor::getId)
+                    .forEach(rentedFloorId -> {
+
+                        List<Ticket> tickets = ticketRepository.findByRentedFloorId(rentedFloorId);
+                        ticketRepository.deleteAll(tickets);
+                    });
+
+
+            //find and delete the representatives of the tenant
+            List<AppUser> representatives = appUserRepository.findUsersWithRoleAndIsTicketCreator(Role.ROLE_REPRESENTANT);
+            representatives.stream().filter(representative -> representative.getTenantRepresentant().equals(tenant)).forEach(appUserRepository::delete);
+
+
+            //delete the tenant
+            tenantRepository.delete(tenant);
             log.info("Tenant deleted successfully with ID: {}", tenantId);
         } catch (IllegalArgumentException e) {
             log.error("Failed to delete tenant with ID: {}. Error: {}", tenantId, e.getMessage());

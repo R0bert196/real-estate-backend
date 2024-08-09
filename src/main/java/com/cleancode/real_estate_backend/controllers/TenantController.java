@@ -37,7 +37,7 @@ public class TenantController {
     @GetMapping("/rented-floors")
     public ResponseEntity<?> getRentedFloors() {
         log.info("Fetching rented floors for tenant");
-        List<RentedFloorResponseDTO> rentedFloors = rentedFloorService.getTenantRentedFloors();
+        List<RentedFloorResponseDTO> rentedFloors = rentedFloorService.getTenantRentedFloorsRepresentative();
         return ResponseEntity.ok(rentedFloors);
     }
 

@@ -40,16 +40,11 @@ public class Ticket {
     @JoinColumn(name = "responsible_manager_id")
     private AppUser responsibleManager;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "rented_floor_id")
     private RentedFloor rentedFloor;
 
-//    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-//    @JoinColumn(name = "creator_id", nullable = true)
-//    private AppUser creator;
-//
-//    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-//    @JoinColumn(name = "responsible_manager_id", nullable = true, unique = true)
-//    private AppUser responsibleManager;
+    @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<TicketMessage> messages = new HashSet<>();
 
 }
