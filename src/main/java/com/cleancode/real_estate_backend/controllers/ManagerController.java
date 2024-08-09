@@ -7,6 +7,7 @@ import com.cleancode.real_estate_backend.dtos.manager.tenants.request.TenantRequ
 import com.cleancode.real_estate_backend.dtos.manager.tenants.response.RentedFloorResponseDTO;
 import com.cleancode.real_estate_backend.dtos.manager.tenants.response.TenantResponseDTO;
 import com.cleancode.real_estate_backend.dtos.manager.tenants.response.TenantResponseDTOLite;
+import com.cleancode.real_estate_backend.dtos.manager.tenants.response.TenantResponseDTOView;
 import com.cleancode.real_estate_backend.dtos.manager.ticket.response.TicketResponseDTOView;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketMessageRequestDTO;
 import com.cleancode.real_estate_backend.dtos.tenant.ticket.request.TicketRequestDTO;
@@ -106,7 +107,7 @@ public class ManagerController {
     public ResponseEntity<?> getTenants() {
         log.info("Request to fetch tenants received.");
 
-        List<TenantResponseDTO> tenants = tenantService.getTenants();
+        List<TenantResponseDTOView> tenants = tenantService.getTenantsView();
 
         log.info("Returning {} tenants.", tenants.size());
         return ResponseEntity.ok(tenants);

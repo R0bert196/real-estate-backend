@@ -3,6 +3,7 @@ package com.cleancode.real_estate_backend.services;
 import com.cleancode.real_estate_backend.dtos.manager.tenants.request.TenantRequestDTO;
 import com.cleancode.real_estate_backend.dtos.manager.tenants.response.TenantResponseDTO;
 import com.cleancode.real_estate_backend.dtos.manager.tenants.response.TenantResponseDTOLite;
+import com.cleancode.real_estate_backend.dtos.manager.tenants.response.TenantResponseDTOView;
 import com.cleancode.real_estate_backend.entities.*;
 import com.cleancode.real_estate_backend.repositories.*;
 import com.cleancode.real_estate_backend.utils.IAuthenticationFacade;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,17 +33,53 @@ public class TenantService {
     private final RentedFloorService rentedFloorService;
     private final IAuthenticationFacade authenticationFacade;
 
-    public List<TenantResponseDTO> getTenants() {
-
+    public List<TenantResponseDTOView> getTenantsView() {
         log.info("Fetching the authenticated user.");
         AppUser manager = appUserRepository.findByEmail(authenticationFacade.getAuthentication().getName())
-                .orElseThrow(EntityNotFoundException::new);
+                .orElseThrow(() -> {
+                    log.error("User not found.");
+                    return new EntityNotFoundException("User not found.");
+                });
 
         log.debug("Authenticated user: {}", manager.getEmail());
+
         List<Tenant> tenants = tenantRepository.findAllWithRentedFloorsAndFloorsAndBuildingByManagerId(manager.getId());
 
         log.info("Fetched {} tenants for manager with ID: {}", tenants.size(), manager.getId());
-        return tenants.stream().map(this::convertToDTO).toList();
+
+        return tenants.stream().map(tenant -> {
+            // Calculate the total rented size
+            double totalRentedSize = tenant.getRentedFloors().stream()
+                    .mapToDouble(RentedFloor::getRentedSize)
+                    .sum();
+
+            // Calculate the average square meter price
+            double averageSquareMeterPrice = tenant.getRentedFloors().stream()
+                    .mapToDouble(RentedFloor::getSquareMeterPrice)
+                    .average()
+                    .orElse(0.0);  // Provide a default value in case the average is not present
+
+            // Calculate the average maintenance square meter price
+            double averageMaintenancePrice = tenant.getRentedFloors().stream()
+                    .mapToDouble(RentedFloor::getMaintenanceSquareMeterPrice)
+                    .average()
+                    .orElse(0.0);  // Provide a default value in case the average is not present
+
+            // Get the unique buildings
+            Integer uniqueBuildingsCount = Math.toIntExact(tenant.getRentedFloors().stream()
+                    .map(rentedFloor -> rentedFloor.getFloor().getBuilding())
+                    .distinct()
+                    .count());
+
+            return new TenantResponseDTOView(
+                    tenant.getId(),
+                    tenant.getName(),
+                    totalRentedSize,
+                    averageSquareMeterPrice,
+                    averageMaintenancePrice,
+                    uniqueBuildingsCount
+            );
+        }).toList();
     }
 
     public TenantResponseDTO getTenantDetails(Long tenantId) {
@@ -66,6 +104,7 @@ public class TenantService {
                 entity.getName(),
                 entity.getRentedFloors().stream().map(rentedFloorService::convertToDTO).toList());
     }
+
 
     @Transactional
     public TenantResponseDTOLite addTenant(TenantRequestDTO tenantCreationRequest) {
